@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+
+    implementation("com.eclipsesource.minimal-json:minimal-json:0.9.4")
 }
 
 tasks.withType<KotlinCompile> {
