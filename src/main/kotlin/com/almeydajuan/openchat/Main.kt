@@ -17,7 +17,7 @@ import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequestAndResponse
 import org.http4k.filter.ServerFilters.CatchAll
 import org.http4k.format.Jackson.auto
-import org.http4k.format.Moshi.autoBody
+import org.http4k.format.Jackson.autoBody
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.ApacheServer
@@ -38,13 +38,13 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
         Response(OK).body("OpenChat: OK!")
     },
+    "/users" bind GET to {
+        userListLens.inject(restReceptionist.users(), Response(OK))
+    },
     "/users" bind POST to {
         val registrationDto = registrationLens.extract(it)
         val user = restReceptionist.registerUser(registrationDto)
         userLens.inject(user, Response(CREATED))
-    },
-    "/users" bind GET to {
-        userListLens.inject(restReceptionist.users(), Response(OK))
     },
     "/login" bind POST to {
         val loginDto = loginLens.extract(it)
