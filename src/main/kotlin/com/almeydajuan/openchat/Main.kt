@@ -32,6 +32,7 @@ val registrationLens = Body.auto<RegistrationDto>().toLens()
 val loginLens = Body.auto<LoginDto>().toLens()
 
 val userLens = autoBody<UserDto>().toLens()
+val userListLens = autoBody<List<UserDto>>().toLens()
 
 fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
@@ -41,6 +42,9 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         val registrationDto = registrationLens.extract(it)
         val user = restReceptionist.registerUser(registrationDto)
         userLens.inject(user, Response(CREATED))
+    },
+    "/users" bind GET to {
+        userListLens.inject(restReceptionist.users(), Response(OK))
     },
     "/login" bind POST to {
         val loginDto = loginLens.extract(it)

@@ -43,7 +43,7 @@ class RestReceptionist(private val system: OpenChatSystem) {
     fun login(loginDto: LoginDto): UserDto? =
         system.authenticateUser(loginDto.username, loginDto.password)?.let { it.toUserDto(idsByUser.getValue(it)) }
 
-    fun users() = okResponseWithUserArrayFrom(system.users())
+    fun users(): List<UserDto> = system.users().map { it.toUserDto(idsByUser.getValue(it)) }
 
     fun followings(followingsBodyAsJson: JsonObject) = kotlin.runCatching {
         val followedId: String = followingsBodyAsJson.getString(FOLLOWED_ID_KEY, "")
