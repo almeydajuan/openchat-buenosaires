@@ -1,8 +1,6 @@
 package com.almeydajuan.openchat.model
 
 import java.util.Optional
-import java.util.function.Function
-import java.util.function.Supplier
 
 class OpenChatSystem(private val clock: Clock) {
     val CANNOT_REGISTER_SAME_USER_TWICE = "Username already in use."
@@ -26,14 +24,6 @@ class OpenChatSystem(private val clock: Clock) {
         userCardForUserName(potentialUserName).isPresent
 
     fun numberOfUsers() = userCards.size
-
-    fun <T> withAuthenticatedUserDo(
-        userName: String,
-        password: String,
-        authenticatedClosure: Function<User, T>,
-        failedClosure: Supplier<T>
-    ): T =
-        authenticatedUser(userName, password).map(authenticatedClosure).orElseGet(failedClosure)
 
     fun publishForUserNamed(userName: String, message: String): Publication {
         val newPublication = publisherForUserNamed(userName).publish(message, clock.now())
@@ -59,8 +49,10 @@ class OpenChatSystem(private val clock: Clock) {
         if (hasUserNamed(userName)) throw ModelException(CANNOT_REGISTER_SAME_USER_TWICE)
     }
 
-    private fun authenticatedUser(userName: String, password: String) =
-        userCardForUserName(userName).filter { it.isPassword(password) }.map { it.user }
+    fun authenticateUser(userName: String, password: String): User? {
+        val userCard = userCards[userName]
+        return if (userCard != null && userCard.isPassword(password)) { userCard.user } else { null }
+    }
 
     private fun userCardForUserName(userName: String) = Optional.ofNullable(userCards[userName])
 

@@ -7,22 +7,14 @@ data class RegistrationDto(
     val homePage: String
 )
 
-data class User(
-    val name: String,
+data class LoginDto(
+    val username: String,
+    val password: String
+)
+
+data class UserDto(
+    val userId: String,
+    val username: String,
     val about: String,
     val homePage: String
-) {
-    init {
-        assertNameIsNotBlank(name)
-    }
-
-    private fun assertNameIsNotBlank(name: String) {
-        if (name.isBlank()) throw ModelException(NAME_CANNOT_BE_BLANK);
-    }
-
-    fun isNamed(potentialName: String): Boolean {
-        return name == potentialName;
-    }
-}
-
-const val NAME_CANNOT_BE_BLANK = "Name can not be blank";
+)

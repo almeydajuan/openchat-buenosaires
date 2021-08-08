@@ -37,16 +37,11 @@ class RestReceptionist(private val system: OpenChatSystem) {
         )
         val registeredUserId = UUID.randomUUID().toString()
         idsByUser[registeredUser] = registeredUserId
-        registeredUser
+        registeredUser.toUserDto(registeredUserId)
     }.onFailure { transformModelException(it) }.getOrThrow()
 
-    fun login(loginBodyAsJson: JsonObject) = system.withAuthenticatedUserDo(
-        userNameFrom(loginBodyAsJson),
-        passwordFrom(loginBodyAsJson),
-        { authenticatedUser -> authenticatedUserResponse(authenticatedUser) }
-    ) {
-        ReceptionistResponse(404, INVALID_CREDENTIALS)
-    }
+    fun login(loginDto: LoginDto): UserDto? =
+        system.authenticateUser(loginDto.username, loginDto.password)?.let { it.toUserDto(idsByUser.getValue(it)) }
 
     fun users() = okResponseWithUserArrayFrom(system.users())
 
@@ -108,11 +103,6 @@ class RestReceptionist(private val system: OpenChatSystem) {
         .add(USERNAME_KEY, registeredUser.name)
         .add(ABOUT_KEY, registeredUser.about)
         .add(HOME_PAGE_KEY, registeredUser.homePage)
-
-    private fun authenticatedUserResponse(authenticatedUser: User) =
-        ReceptionistResponse(200, userResponseAsJson(
-            authenticatedUser,
-            userIdFor(authenticatedUser)).toString())
 
     private fun userIdentifiedAs(userId: String): User =
         idsByUser.entries.firstOrNull { (_, value) -> value == userId }?.key
