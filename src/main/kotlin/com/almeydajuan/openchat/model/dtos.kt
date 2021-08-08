@@ -1,5 +1,12 @@
 package com.almeydajuan.openchat.model
 
+data class RegistrationDto(
+    val username: String,
+    val password: String,
+    val about: String,
+    val homePage: String
+)
+
 data class User(
     val name: String,
     val about: String,

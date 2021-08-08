@@ -7,36 +7,37 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class RestReceptionist(private val system: OpenChatSystem) {
-    val USERNAME_KEY = "username"
-    val PASSWORD_KEY = "password"
-    val ABOUT_KEY = "about"
-    val HOME_PAGE_KEY = "homePage"
-    val ID_KEY = "id"
-    val FOLLOWED_ID_KEY = "followerId"
-    val FOLLOWER_ID_KEY = "followeeId"
-    val POST_ID_KEY = "postId"
-    val USER_ID_KEY = "userId"
-    val TEXT_KEY = "text"
-    val DATE_TIME_KEY = "dateTime"
-    val LIKES_KEY = "likes"
-    val PUBLICATION_ID_KEY = "publicationId"
-    val INVALID_CREDENTIALS = "Invalid credentials."
-    val FOLLOWING_CREATED = "Following created."
-    val INVALID_PUBLICATION = "Invalid post"
-    val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private val USERNAME_KEY = "username"
+    private val PASSWORD_KEY = "password"
+    private val ABOUT_KEY = "about"
+    private val HOME_PAGE_KEY = "homePage"
+    private val ID_KEY = "id"
+    private val FOLLOWED_ID_KEY = "followerId"
+    private val FOLLOWER_ID_KEY = "followeeId"
+    private val POST_ID_KEY = "postId"
+    private val USER_ID_KEY = "userId"
+    private val TEXT_KEY = "text"
+    private val DATE_TIME_KEY = "dateTime"
+    private val LIKES_KEY = "likes"
+    private val PUBLICATION_ID_KEY = "publicationId"
+    private val INVALID_CREDENTIALS = "Invalid credentials."
+    private val FOLLOWING_CREATED = "Following created."
+    private val INVALID_PUBLICATION = "Invalid post"
+    private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
     private val idsByUser: MutableMap<User, String> = mutableMapOf()
     private val idsByPublication: MutableMap<Publication, String> = mutableMapOf()
 
-    fun registerUser(registrationBodyAsJson: JsonObject) = runCatching {
+    fun registerUser(registrationDto: RegistrationDto) = runCatching {
         val registeredUser: User = system.register(
-            userNameFrom(registrationBodyAsJson),
-            passwordFrom(registrationBodyAsJson),
-            aboutFrom(registrationBodyAsJson),
-            homePageFrom(registrationBodyAsJson))
+            userName = registrationDto.username,
+            password = registrationDto.password,
+            about = registrationDto.about,
+            homePage = registrationDto.homePage
+        )
         val registeredUserId = UUID.randomUUID().toString()
         idsByUser[registeredUser] = registeredUserId
-        ReceptionistResponse(201, userResponseAsJson(registeredUser, registeredUserId))
+        registeredUser
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     fun login(loginBodyAsJson: JsonObject) = system.withAuthenticatedUserDo(
