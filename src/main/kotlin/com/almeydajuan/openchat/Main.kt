@@ -39,6 +39,7 @@ val publicationBodyLens = Body.auto<PublicationTextDto>().toLens()
 val userResponseLens = autoBody<UserDto>().toLens()
 val userListResponseLens = autoBody<List<UserDto>>().toLens()
 val publicationResponseLens = autoBody<PublicationDto>().toLens()
+val publicationListResponseLens = autoBody<List<PublicationDto>>().toLens()
 
 val userIdPathLens = Path.string().of("userId")
 
@@ -53,6 +54,10 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         val registrationDto = registrationBodyLens.extract(it)
         val user = restReceptionist.registerUser(registrationDto)
         userResponseLens.inject(user, Response(CREATED))
+    },
+    "/users/:userId/timeline" bind GET to {
+        val userId = userIdPathLens.extract(it)
+        publicationListResponseLens.inject(restReceptionist.timelineOf(userId), Response(OK))
     },
     "/users/:userId/timeline" bind POST to {
         val userId = userIdPathLens.extract(it)

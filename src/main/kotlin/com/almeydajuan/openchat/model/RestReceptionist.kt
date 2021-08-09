@@ -74,13 +74,19 @@ class RestReceptionist(private val system: OpenChatSystem) {
         idsByPublication[publication] = publicationId
         publication.toPublicationDto(
             publicationId = publicationId,
-            userId = idsByUser.getValue(publication.publisher.relatedUser()),
+            userId = userIdFor(publication.publisherRelatedUser()),
             likes = system.likesOf(publication)
         )
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     fun timelineOf(userId: String) =
-        publicationsAsJson(system.timeLineForUserNamed(userNameIdentifiedAs(userId)))
+        system.timeLineForUserNamed(userNameIdentifiedAs(userId)).map {
+            it.toPublicationDto(
+                publicationId = publicationIdFor(it),
+                userId = userIdFor(it.publisherRelatedUser()),
+                likes = system.likesOf(it)
+            )
+        }
 
     fun wallOf(userId: String) = publicationsAsJson(system.wallForUserNamed(userNameIdentifiedAs(userId)))
 
