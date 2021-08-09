@@ -14,6 +14,7 @@ import com.almeydajuan.openchat.model.RegistrationDto
 import com.almeydajuan.openchat.model.RestReceptionist
 import com.almeydajuan.openchat.model.UserDto
 import org.http4k.core.Body
+import org.http4k.core.Filter
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Response
@@ -70,10 +71,9 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     },
     "/users" bind POST to { request ->
         val registrationDto = registrationBodyLens.extract(request)
-        runCatching {
-            val user = restReceptionist.registerUser(registrationDto)
-            userResponseLens.inject(user, Response(CREATED))
-        }.onFailure { mapFailure(it) }.getOrThrow()
+        val user = restReceptionist.registerUser(registrationDto)
+
+        userResponseLens.inject(user, Response(CREATED))
     },
     "/users/{userId}/timeline" bind GET to {
         val userId = userIdPathLens.extract(it)
@@ -83,10 +83,9 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/users/{userId}/timeline" bind POST to { request ->
         val userId = userIdPathLens.extract(request)
         val publication = publicationBodyLens.extract(request)
-        runCatching {
-            val publicationAdded = restReceptionist.addPublication(userId, publication)
-            publicationResponseLens.inject(publicationAdded, Response(CREATED))
-        }.onFailure { mapFailure(it) }.getOrThrow()
+        val publicationAdded = restReceptionist.addPublication(userId, publication)
+
+        publicationResponseLens.inject(publicationAdded, Response(CREATED))
     },
     "/followings/{followerId}/followees" bind GET to {
         val userId = followerIdPathLens.extract(it)
@@ -96,10 +95,9 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     },
     "/followings" bind POST to { request ->
         val followingDto = followingBodyLens.extract(request)
-        runCatching {
-            restReceptionist.followings(followingDto)
-            Response(CREATED).body(FOLLOWING_CREATED)
-        }.onFailure { mapFailure(it) }.getOrThrow()
+        restReceptionist.followings(followingDto)
+
+        Response(CREATED).body(FOLLOWING_CREATED)
     },
     "/users/{userId}/wall" bind GET to {
         val userId = userIdPathLens.extract(it)
@@ -110,17 +108,20 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/publications/{publicationId}/like" bind POST to { request ->
         val publicationId = publicationIdPathLens.extract(request)
         val likerDto = likerBodyLens.extract(request)
-        runCatching {
-            val likesDto = restReceptionist.likePublicationIdentifiedAs(publicationId, likerDto)
-            likesResponseLens.inject(likesDto, Response(OK))
-        }.onFailure { mapFailure(it) }.getOrThrow()
-    }
-).withFilter(PrintRequestAndResponse().then(CatchAll()))
+        val likesDto = restReceptionist.likePublicationIdentifiedAs(publicationId, likerDto)
 
-private fun mapFailure(exception: Throwable) {
-    if (exception is ModelException) {
-        Response(BAD_REQUEST).body(exception.reason)
-    } else {
-        Response(INTERNAL_SERVER_ERROR)
+        likesResponseLens.inject(likesDto, Response(OK))
+    }
+).withFilter(PrintRequestAndResponse().then(CatchAll()).then(mapFailures()))
+
+fun mapFailures() = Filter { next ->
+    {
+        try {
+            next(it)
+        } catch (modelException: ModelException) {
+            Response(BAD_REQUEST).body(modelException.reason)
+        } catch (exception: Exception) {
+            Response(INTERNAL_SERVER_ERROR)
+        }
     }
 }
