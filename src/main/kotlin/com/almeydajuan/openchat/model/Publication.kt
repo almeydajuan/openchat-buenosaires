@@ -13,8 +13,6 @@ class Publication(
         assertIsAppropriate(message)
     }
 
-    private val inappropriateWords = Collections.unmodifiableList(listOf("elephant", "ice cream", "orange"))
-
     private fun assertIsAppropriate(message: String) {
         if (isInappropriate(message)) throw ModelException(INAPPROPRIATE_WORD)
     }
@@ -26,3 +24,4 @@ class Publication(
 }
 
 const val INAPPROPRIATE_WORD = "Post contains inappropriate language."
+private val inappropriateWords = Collections.unmodifiableList(listOf("elephant", "ice cream", "orange"))

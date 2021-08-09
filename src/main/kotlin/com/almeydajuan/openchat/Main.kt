@@ -75,12 +75,12 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
             userResponseLens.inject(user, Response(CREATED))
         }.onFailure { mapFailure(it) }.getOrThrow()
     },
-    "/users/:userId/timeline" bind GET to {
+    "/users/{userId}/timeline" bind GET to {
         val userId = userIdPathLens.extract(it)
 
         publicationListResponseLens.inject(restReceptionist.timelineOf(userId), Response(OK))
     },
-    "/users/:userId/timeline" bind POST to { request ->
+    "/users/{userId}/timeline" bind POST to { request ->
         val userId = userIdPathLens.extract(request)
         val publication = publicationBodyLens.extract(request)
         runCatching {
@@ -88,7 +88,7 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
             publicationResponseLens.inject(publicationAdded, Response(CREATED))
         }.onFailure { mapFailure(it) }.getOrThrow()
     },
-    "/followings/:followerId/followees" bind GET to {
+    "/followings/{followerId}/followees" bind GET to {
         val userId = followerIdPathLens.extract(it)
         val followers = restReceptionist.followersOf(userId)
 
@@ -101,13 +101,13 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
             Response(CREATED).body(FOLLOWING_CREATED)
         }.onFailure { mapFailure(it) }.getOrThrow()
     },
-    "/users/:userId/wall" bind GET to {
+    "/users/{userId}/wall" bind GET to {
         val userId = userIdPathLens.extract(it)
         val wall = restReceptionist.wallOf(userId)
 
         publicationListResponseLens.inject(wall, Response(OK))
     },
-    "/publications/:publicationId/like" bind POST to { request ->
+    "/publications/{publicationId}/like" bind POST to { request ->
         val publicationId = publicationIdPathLens.extract(request)
         val likerDto = likerBodyLens.extract(request)
         runCatching {
