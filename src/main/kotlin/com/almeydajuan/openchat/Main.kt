@@ -3,6 +3,8 @@ package com.almeydajuan.openchat
 import com.almeydajuan.openchat.model.ClockImpl
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
+import com.almeydajuan.openchat.model.PublicationDto
+import com.almeydajuan.openchat.model.PublicationTextDto
 import com.almeydajuan.openchat.model.RegistrationDto
 import com.almeydajuan.openchat.model.RestReceptionist
 import com.almeydajuan.openchat.model.UserDto
@@ -18,6 +20,8 @@ import org.http4k.filter.DebuggingFilters.PrintRequestAndResponse
 import org.http4k.filter.ServerFilters.CatchAll
 import org.http4k.format.Jackson.auto
 import org.http4k.format.Jackson.autoBody
+import org.http4k.lens.Path
+import org.http4k.lens.string
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.ApacheServer
@@ -28,29 +32,39 @@ fun main() {
     newBackend(restReceptionist).asServer(ApacheServer(port = 8080)).start()
 }
 
-val registrationLens = Body.auto<RegistrationDto>().toLens()
-val loginLens = Body.auto<LoginDto>().toLens()
+val registrationBodyLens = Body.auto<RegistrationDto>().toLens()
+val loginBodyLens = Body.auto<LoginDto>().toLens()
+val publicationBodyLens = Body.auto<PublicationTextDto>().toLens()
 
-val userLens = autoBody<UserDto>().toLens()
-val userListLens = autoBody<List<UserDto>>().toLens()
+val userResponseLens = autoBody<UserDto>().toLens()
+val userListResponseLens = autoBody<List<UserDto>>().toLens()
+val publicationResponseLens = autoBody<PublicationDto>().toLens()
+
+val userIdPathLens = Path.string().of("userId")
 
 fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
         Response(OK).body("OpenChat: OK!")
     },
     "/users" bind GET to {
-        userListLens.inject(restReceptionist.users(), Response(OK))
+        userListResponseLens.inject(restReceptionist.users(), Response(OK))
     },
     "/users" bind POST to {
-        val registrationDto = registrationLens.extract(it)
+        val registrationDto = registrationBodyLens.extract(it)
         val user = restReceptionist.registerUser(registrationDto)
-        userLens.inject(user, Response(CREATED))
+        userResponseLens.inject(user, Response(CREATED))
+    },
+    "/users/:userId/timeline" bind POST to {
+        val userId = userIdPathLens.extract(it)
+        val publication = publicationBodyLens.extract(it)
+
+        publicationResponseLens.inject(restReceptionist.addPublication(userId, publication), Response(CREATED))
     },
     "/login" bind POST to {
-        val loginDto = loginLens.extract(it)
+        val loginDto = loginBodyLens.extract(it)
         val user = restReceptionist.login(loginDto)
         user?.let { userDto ->
-            userLens.inject(userDto, Response(OK))
+            userResponseLens.inject(userDto, Response(OK))
         } ?: Response(NOT_FOUND)
     }
 ).withFilter(PrintRequestAndResponse().then(CatchAll()))

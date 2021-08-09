@@ -18,3 +18,15 @@ data class UserDto(
     val about: String,
     val homePage: String
 )
+
+data class PublicationTextDto(
+    val text: String
+)
+
+data class PublicationDto(
+    val postId: String,
+    val userId: String,
+    val text: String,
+    val dateTime: String,
+    val likes: Int
+)

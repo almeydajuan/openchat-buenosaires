@@ -45,7 +45,7 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
     fun users(): List<UserDto> = system.users().map { it.toUserDto(idsByUser.getValue(it)) }
 
-    fun followings(followingsBodyAsJson: JsonObject) = kotlin.runCatching {
+    fun followings(followingsBodyAsJson: JsonObject) = runCatching {
         val followedId: String = followingsBodyAsJson.getString(FOLLOWED_ID_KEY, "")
         val followerId: String = followingsBodyAsJson.getString(FOLLOWER_ID_KEY, "")
 
@@ -68,11 +68,15 @@ class RestReceptionist(private val system: OpenChatSystem) {
         return okResponseWithUserArrayFrom(followers)
     }
 
-    fun addPublication(userId: String, messageBodyAsJson: JsonObject) = runCatching {
-        val publication: Publication = system.publishForUserNamed(userNameIdentifiedAs(userId), messageBodyAsJson.getString("text", ""))
+    fun addPublication(userId: String, publicationTextDto: PublicationTextDto) = runCatching {
+        val publication: Publication = system.publishForUserNamed(userNameIdentifiedAs(userId), publicationTextDto.text)
         val publicationId = UUID.randomUUID().toString()
         idsByPublication[publication] = publicationId
-        ReceptionistResponse(201, publicationAsJson(userId, publication, publicationId))
+        publication.toPublicationDto(
+            publicationId = publicationId,
+            userId = idsByUser.getValue(publication.publisher.relatedUser()),
+            likes = system.likesOf(publication)
+        )
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     fun timelineOf(userId: String) =
