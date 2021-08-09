@@ -1,16 +1,11 @@
 package com.almeydajuan.openchat.model
 
+import java.time.LocalDateTime
 import java.util.Optional
 
-class OpenChatSystem(private val clock: Clock) {
-    val CANNOT_REGISTER_SAME_USER_TWICE = "Username already in use."
-    val USER_NOT_REGISTERED = "User not registered"
-    val INVALID_PUBLICATION = "Invalid post"
-
+class OpenChatSystem {
     private val userCards: MutableMap<String, UserCard> = mutableMapOf()
     private val likersByPublication: MutableMap<Publication, MutableSet<Publisher>> = mutableMapOf()
-
-    fun hasUsers() = userCards.isNotEmpty()
 
     fun register(userName: String, password: String, about: String, homePage: String): User {
         assertIsNotDuplicated(userName)
@@ -23,10 +18,8 @@ class OpenChatSystem(private val clock: Clock) {
     private fun hasUserNamed(potentialUserName: String) =
         userCardForUserName(potentialUserName).isPresent
 
-    fun numberOfUsers() = userCards.size
-
     fun publishForUserNamed(userName: String, message: String): Publication {
-        val newPublication = publisherForUserNamed(userName).publish(message, clock.now())
+        val newPublication = publisherForUserNamed(userName).publish(message, LocalDateTime.now())
         likersByPublication[newPublication] = HashSet()
         return newPublication
     }
@@ -76,3 +69,6 @@ class OpenChatSystem(private val clock: Clock) {
         }
     }
 }
+
+const val CANNOT_REGISTER_SAME_USER_TWICE = "Username already in use."
+const val USER_NOT_REGISTERED = "User not registered"

@@ -8,8 +8,6 @@ class Publisher(private val user: User) {
     private val followers: MutableList<Publisher> = mutableListOf()
     private val publications: MutableList<Publication> = mutableListOf()
 
-    fun hasFollowers() = followers.isNotEmpty()
-
     fun followedBy(potentialFollower: Publisher) {
         assertCanNotFollowSelf(potentialFollower)
         assertCanNotFollowTwice(potentialFollower)
@@ -17,10 +15,6 @@ class Publisher(private val user: User) {
     }
 
     private fun isFollowedBy(potentialFollower: Publisher) = followers.contains(potentialFollower)
-
-    fun numberOfFollowers() = followers.size
-
-    fun hasPublications() = publications.isNotEmpty()
 
     fun publish(message: String, publicationTime: LocalDateTime): Publication {
         val newPublication = Publication(this, message, publicationTime)
@@ -38,9 +32,7 @@ class Publisher(private val user: User) {
 
     fun followers(): List<Publisher> = Collections.unmodifiableList(followers)
 
-    fun relatedUser(): User {
-        return user
-    }
+    fun relatedUser() = user
 
     private fun assertCanNotFollowTwice(potentialFollower: Publisher) {
         if (isFollowedBy(potentialFollower)) throw ModelException(CANNOT_FOLLOW_TWICE)

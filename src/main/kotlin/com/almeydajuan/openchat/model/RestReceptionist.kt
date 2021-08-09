@@ -1,27 +1,11 @@
 package com.almeydajuan.openchat.model
 
-import com.eclipsesource.json.JsonArray
-import com.eclipsesource.json.JsonObject
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class RestReceptionist(private val system: OpenChatSystem) {
-    private val USERNAME_KEY = "username"
-    private val PASSWORD_KEY = "password"
-    private val ABOUT_KEY = "about"
-    private val HOME_PAGE_KEY = "homePage"
-    private val ID_KEY = "id"
-    private val FOLLOWED_ID_KEY = "followerId"
-    private val FOLLOWER_ID_KEY = "followeeId"
-    private val POST_ID_KEY = "postId"
-    private val USER_ID_KEY = "userId"
-    private val TEXT_KEY = "text"
-    private val DATE_TIME_KEY = "dateTime"
-    private val LIKES_KEY = "likes"
-    private val PUBLICATION_ID_KEY = "publicationId"
-    private val INVALID_PUBLICATION = "Invalid post"
-    private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
     private val idsByUser: MutableMap<User, String> = mutableMapOf()
     private val idsByPublication: MutableMap<Publication, String> = mutableMapOf()
@@ -79,55 +63,13 @@ class RestReceptionist(private val system: OpenChatSystem) {
         return LikesDto(system.likePublication(publication, userName))
     }
 
-    private fun passwordFrom(registrationAsJson: JsonObject) = registrationAsJson.getString(PASSWORD_KEY, "")
-
-    private fun userNameFrom(registrationAsJson: JsonObject) = registrationAsJson.getString(USERNAME_KEY, "")
-
-    private fun aboutFrom(registrationAsJson: JsonObject) = registrationAsJson.getString(ABOUT_KEY, "")
-
-    private fun homePageFrom(registrationAsJson: JsonObject) = registrationAsJson.getString(HOME_PAGE_KEY, "")
-
-    private fun userResponseAsJson(registeredUser: User, registeredUserId: String) = JsonObject()
-        .add(ID_KEY, registeredUserId)
-        .add(USERNAME_KEY, registeredUser.name)
-        .add(ABOUT_KEY, registeredUser.about)
-        .add(HOME_PAGE_KEY, registeredUser.homePage)
-
     private fun userIdentifiedAs(userId: String): User =
         idsByUser.entries.firstOrNull { (_, value) -> value == userId }?.key
             ?: throw ModelException(INVALID_CREDENTIALS)
 
-    private fun okResponseWithUserArrayFrom(users: List<User>): ReceptionistResponse {
-        val usersAsJsonArray = JsonArray()
-        users.map { userResponseAsJson(it, userIdFor(it)) }.forEach { usersAsJsonArray.add(it) }
-        return ReceptionistResponse(200, usersAsJsonArray)
-    }
-
     private fun userNameIdentifiedAs(userId: String) = userIdentifiedAs(userId).name
 
-    private fun publicationAsJson(userId: String, publication: Publication, publicationId: String): JsonObject {
-        return JsonObject()
-            .add(POST_ID_KEY, publicationId)
-            .add(USER_ID_KEY, userId)
-            .add(TEXT_KEY, publication.message)
-            .add(DATE_TIME_KEY, formatDateTime(publication.publicationTime))
-            .add(LIKES_KEY, system.likesOf(publication))
-    }
-
-    private fun formatDateTime(dateTimeToFormat: LocalDateTime) = DATE_TIME_FORMATTER.format(dateTimeToFormat)
-
-    private fun publicationsAsJson(timeLine: List<Publication>): ReceptionistResponse {
-        val publicationsAsJsonObject = JsonArray()
-        timeLine.map {
-            publicationAsJson(
-                userId = userIdFor(user = it.publisherRelatedUser()),
-                publication = it,
-                publicationId = publicationIdFor(it))
-        }.forEach {
-            publicationsAsJsonObject.add(it)
-        }
-        return ReceptionistResponse(200, publicationsAsJsonObject)
-    }
+    private fun formatDateTime(dateTimeToFormat: LocalDateTime) = dateTimeFormatter.format(dateTimeToFormat)
 
     private fun publicationIdFor(publication: Publication) = idsByPublication.getValue(publication)
 
@@ -136,3 +78,4 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
 const val FOLLOWING_CREATED = "Following created."
 const val INVALID_CREDENTIALS = "Invalid credentials."
+const val INVALID_PUBLICATION = "Invalid post"

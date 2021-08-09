@@ -1,6 +1,5 @@
 package com.almeydajuan.openchat
 
-import com.almeydajuan.openchat.model.ClockImpl
 import com.almeydajuan.openchat.model.FOLLOWING_CREATED
 import com.almeydajuan.openchat.model.FollowingDto
 import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
@@ -36,7 +35,7 @@ import org.http4k.server.ApacheServer
 import org.http4k.server.asServer
 
 fun main() {
-    val restReceptionist = RestReceptionist(OpenChatSystem(ClockImpl()))
+    val restReceptionist = RestReceptionist(OpenChatSystem())
     newBackend(restReceptionist).asServer(ApacheServer(port = 8080)).start()
 }
 
@@ -95,8 +94,8 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
 
         userListResponseLens.inject(followers, Response(OK))
     },
-    "/followings" bind POST to {
-        val followingDto = followingBodyLens.extract(it)
+    "/followings" bind POST to { request ->
+        val followingDto = followingBodyLens.extract(request)
         runCatching {
             restReceptionist.followings(followingDto)
             Response(CREATED).body(FOLLOWING_CREATED)
@@ -108,9 +107,9 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
 
         publicationListResponseLens.inject(wall, Response(OK))
     },
-    "/publications/:publicationId/like" bind POST to {
-        val publicationId = publicationIdPathLens.extract(it)
-        val likerDto = likerBodyLens.extract(it)
+    "/publications/:publicationId/like" bind POST to { request ->
+        val publicationId = publicationIdPathLens.extract(request)
+        val likerDto = likerBodyLens.extract(request)
         runCatching {
             val likesDto = restReceptionist.likePublicationIdentifiedAs(publicationId, likerDto)
             likesResponseLens.inject(likesDto, Response(OK))

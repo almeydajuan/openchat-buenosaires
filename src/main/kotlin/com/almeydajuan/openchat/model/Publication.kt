@@ -1,7 +1,6 @@
 package com.almeydajuan.openchat.model
 
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Collections
 
 class Publication(
@@ -21,13 +20,6 @@ class Publication(
     }
 
     private fun isInappropriate(message: String) = inappropriateWords.any { message.lowercase().contains(it) }
-
-    fun hasMessage(potentialMessage: String) = message == potentialMessage
-
-    fun wasPublishedAt(potentialTime: LocalDateTime) = publicationTime == potentialTime
-
-    fun comparePublicationTimeWith(publicationToCompare: Publication) =
-        publicationTime.compareTo(publicationToCompare.publicationTime)
 
     fun publisherRelatedUser() = publisher.relatedUser()
 
