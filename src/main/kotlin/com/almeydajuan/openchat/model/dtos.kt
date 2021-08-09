@@ -35,3 +35,11 @@ data class FollowingDto(
     val followerId: String,
     val followeeId: String
 )
+
+data class LikerDto(
+    val userId: String
+)
+
+data class LikesDto(
+    val likes: Int
+)

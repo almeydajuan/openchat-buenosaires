@@ -82,14 +82,11 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
     fun wallOf(userId: String) = system.wallForUserNamed(userNameIdentifiedAs(userId)).map { mapToPublicationDto(it) }
 
-    fun likePublicationIdentifiedAs(publicationId: String, likerAsJson: JsonObject) = runCatching {
-        val userName = userNameIdentifiedAs(likerAsJson.getString(USER_ID_KEY, ""))
+    fun likePublicationIdentifiedAs(publicationId: String, likerDto: LikerDto) = runCatching {
+        val userName = userNameIdentifiedAs(likerDto.userId)
         val publication = idsByPublication.entries
             .firstOrNull { (_, value) -> value == publicationId }?.key ?: throw ModelException(INVALID_PUBLICATION)
-        val likes: Int = system.likePublication(publication, userName)
-        val likesAsJsonObject: JsonObject = JsonObject()
-            .add(LIKES_KEY, likes)
-        ReceptionistResponse(200, likesAsJsonObject)
+        LikesDto(system.likePublication(publication, userName))
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     private fun passwordFrom(registrationAsJson: JsonObject) = registrationAsJson.getString(PASSWORD_KEY, "")

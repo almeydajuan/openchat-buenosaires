@@ -3,6 +3,8 @@ package com.almeydajuan.openchat
 import com.almeydajuan.openchat.model.ClockImpl
 import com.almeydajuan.openchat.model.FOLLOWING_CREATED
 import com.almeydajuan.openchat.model.FollowingDto
+import com.almeydajuan.openchat.model.LikerDto
+import com.almeydajuan.openchat.model.LikesDto
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
 import com.almeydajuan.openchat.model.PublicationDto
@@ -38,14 +40,17 @@ val registrationBodyLens = Body.auto<RegistrationDto>().toLens()
 val loginBodyLens = Body.auto<LoginDto>().toLens()
 val publicationBodyLens = Body.auto<PublicationTextDto>().toLens()
 val followingBodyLens = Body.auto<FollowingDto>().toLens()
+val likerBodyLens = Body.auto<LikerDto>().toLens()
 
 val userResponseLens = autoBody<UserDto>().toLens()
 val userListResponseLens = autoBody<List<UserDto>>().toLens()
 val publicationResponseLens = autoBody<PublicationDto>().toLens()
 val publicationListResponseLens = autoBody<List<PublicationDto>>().toLens()
+val likesResponseLens = autoBody<LikesDto>().toLens()
 
 val userIdPathLens = Path.string().of("userId")
 val followerIdPathLens = Path.string().of("followerId")
+val publicationIdPathLens = Path.string().of("publicationId")
 
 fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
@@ -96,5 +101,12 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         val wall = restReceptionist.wallOf(userId)
 
         publicationListResponseLens.inject(wall, Response(OK))
+    },
+    "/publications/:publicationId/like" bind POST to {
+        val publicationId = publicationIdPathLens.extract(it)
+        val likerDto = likerBodyLens.extract(it)
+        val likesDto = restReceptionist.likePublicationIdentifiedAs(publicationId, likerDto)
+
+        likesResponseLens.inject(likesDto, Response(OK))
     }
 ).withFilter(PrintRequestAndResponse().then(CatchAll()))
