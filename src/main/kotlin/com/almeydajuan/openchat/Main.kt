@@ -51,6 +51,13 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
         Response(OK).body("OpenChat: OK!")
     },
+    "/login" bind POST to {
+        val loginDto = loginBodyLens.extract(it)
+        val user = restReceptionist.login(loginDto)
+        user?.let { userDto ->
+            userResponseLens.inject(userDto, Response(OK))
+        } ?: Response(NOT_FOUND)
+    },
     "/users" bind GET to {
         userListResponseLens.inject(restReceptionist.users(), Response(OK))
     },
@@ -84,11 +91,10 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
 
         Response(CREATED).body(FOLLOWING_CREATED)
     },
-    "/login" bind POST to {
-        val loginDto = loginBodyLens.extract(it)
-        val user = restReceptionist.login(loginDto)
-        user?.let { userDto ->
-            userResponseLens.inject(userDto, Response(OK))
-        } ?: Response(NOT_FOUND)
+    "/users/:userId/wall" bind GET to {
+        val userId = userIdPathLens.extract(it)
+        val wall = restReceptionist.wallOf(userId)
+
+        publicationListResponseLens.inject(wall, Response(OK))
     }
 ).withFilter(PrintRequestAndResponse().then(CatchAll()))

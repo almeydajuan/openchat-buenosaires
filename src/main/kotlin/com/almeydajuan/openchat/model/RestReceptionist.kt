@@ -66,23 +66,21 @@ class RestReceptionist(private val system: OpenChatSystem) {
         val publication: Publication = system.publishForUserNamed(userNameIdentifiedAs(userId), publicationTextDto.text)
         val publicationId = UUID.randomUUID().toString()
         idsByPublication[publication] = publicationId
-        publication.toPublicationDto(
-            publicationId = publicationId,
-            userId = userIdFor(publication.publisherRelatedUser()),
-            likes = system.likesOf(publication)
-        )
+        mapToPublicationDto(publication)
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     fun timelineOf(userId: String) =
-        system.timeLineForUserNamed(userNameIdentifiedAs(userId)).map {
-            it.toPublicationDto(
-                publicationId = publicationIdFor(it),
-                userId = userIdFor(it.publisherRelatedUser()),
-                likes = system.likesOf(it)
-            )
-        }
+        system.timeLineForUserNamed(userNameIdentifiedAs(userId)).map { mapToPublicationDto(it) }
 
-    fun wallOf(userId: String) = publicationsAsJson(system.wallForUserNamed(userNameIdentifiedAs(userId)))
+    private fun mapToPublicationDto(publication: Publication) = PublicationDto(
+        postId = publicationIdFor(publication),
+        userId = userIdFor(publication.publisherRelatedUser()),
+        text = publication.message,
+        dateTime = formatDateTime(publication.publicationTime),
+        likes = system.likesOf(publication)
+    )
+
+    fun wallOf(userId: String) = system.wallForUserNamed(userNameIdentifiedAs(userId)).map { mapToPublicationDto(it) }
 
     fun likePublicationIdentifiedAs(publicationId: String, likerAsJson: JsonObject) = runCatching {
         val userName = userNameIdentifiedAs(likerAsJson.getString(USER_ID_KEY, ""))

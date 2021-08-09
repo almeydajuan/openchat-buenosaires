@@ -31,17 +31,6 @@ class Publication(
 
     fun publisherRelatedUser() = publisher.relatedUser()
 
-    fun toPublicationDto(publicationId: String, userId: String, likes: Int) = PublicationDto(
-        postId = publicationId,
-        userId = userId,
-        text = message,
-        dateTime = formatDateTime(publicationTime),
-        likes = likes
-        )
-
-    private fun formatDateTime(dateTimeToFormat: LocalDateTime) = DATE_TIME_FORMATTER.format(dateTimeToFormat)
-
 }
 
-private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 const val INAPPROPRIATE_WORD = "Post contains inappropriate language."
