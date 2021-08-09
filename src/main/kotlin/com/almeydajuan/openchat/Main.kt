@@ -1,6 +1,8 @@
 package com.almeydajuan.openchat
 
 import com.almeydajuan.openchat.model.ClockImpl
+import com.almeydajuan.openchat.model.FOLLOWING_CREATED
+import com.almeydajuan.openchat.model.FollowingDto
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
 import com.almeydajuan.openchat.model.PublicationDto
@@ -35,6 +37,7 @@ fun main() {
 val registrationBodyLens = Body.auto<RegistrationDto>().toLens()
 val loginBodyLens = Body.auto<LoginDto>().toLens()
 val publicationBodyLens = Body.auto<PublicationTextDto>().toLens()
+val followingBodyLens = Body.auto<FollowingDto>().toLens()
 
 val userResponseLens = autoBody<UserDto>().toLens()
 val userListResponseLens = autoBody<List<UserDto>>().toLens()
@@ -42,6 +45,7 @@ val publicationResponseLens = autoBody<PublicationDto>().toLens()
 val publicationListResponseLens = autoBody<List<PublicationDto>>().toLens()
 
 val userIdPathLens = Path.string().of("userId")
+val followerIdPathLens = Path.string().of("followerId")
 
 fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/status" bind GET to {
@@ -53,17 +57,32 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/users" bind POST to {
         val registrationDto = registrationBodyLens.extract(it)
         val user = restReceptionist.registerUser(registrationDto)
+
         userResponseLens.inject(user, Response(CREATED))
     },
     "/users/:userId/timeline" bind GET to {
         val userId = userIdPathLens.extract(it)
+
         publicationListResponseLens.inject(restReceptionist.timelineOf(userId), Response(OK))
     },
     "/users/:userId/timeline" bind POST to {
         val userId = userIdPathLens.extract(it)
         val publication = publicationBodyLens.extract(it)
+        val publicationAdded = restReceptionist.addPublication(userId, publication)
 
-        publicationResponseLens.inject(restReceptionist.addPublication(userId, publication), Response(CREATED))
+        publicationResponseLens.inject(publicationAdded, Response(CREATED))
+    },
+    "/followings/:followerId/followees" bind GET to {
+        val userId = followerIdPathLens.extract(it)
+        val followers = restReceptionist.followersOf(userId)
+
+        userListResponseLens.inject(followers, Response(OK))
+    },
+    "/followings" bind POST to {
+        val followingDto = followingBodyLens.extract(it)
+        restReceptionist.followings(followingDto)
+
+        Response(CREATED).body(FOLLOWING_CREATED)
     },
     "/login" bind POST to {
         val loginDto = loginBodyLens.extract(it)

@@ -30,3 +30,8 @@ data class PublicationDto(
     val dateTime: String,
     val likes: Int
 )
+
+data class FollowingDto(
+    val followerId: String,
+    val followeeId: String
+)

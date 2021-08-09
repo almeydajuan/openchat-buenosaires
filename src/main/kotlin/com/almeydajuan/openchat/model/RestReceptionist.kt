@@ -21,7 +21,6 @@ class RestReceptionist(private val system: OpenChatSystem) {
     private val LIKES_KEY = "likes"
     private val PUBLICATION_ID_KEY = "publicationId"
     private val INVALID_CREDENTIALS = "Invalid credentials."
-    private val FOLLOWING_CREATED = "Following created."
     private val INVALID_PUBLICATION = "Invalid post"
     private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
@@ -41,18 +40,15 @@ class RestReceptionist(private val system: OpenChatSystem) {
     }.onFailure { transformModelException(it) }.getOrThrow()
 
     fun login(loginDto: LoginDto): UserDto? =
-        system.authenticateUser(loginDto.username, loginDto.password)?.let { it.toUserDto(idsByUser.getValue(it)) }
+        system.authenticateUser(loginDto.username, loginDto.password)?.let { it.toUserDto(userIdFor(it)) }
 
-    fun users(): List<UserDto> = system.users().map { it.toUserDto(idsByUser.getValue(it)) }
+    fun users(): List<UserDto> = system.users().map { it.toUserDto(userIdFor(it)) }
 
-    fun followings(followingsBodyAsJson: JsonObject) = runCatching {
-        val followedId: String = followingsBodyAsJson.getString(FOLLOWED_ID_KEY, "")
-        val followerId: String = followingsBodyAsJson.getString(FOLLOWER_ID_KEY, "")
-
+    fun followings(followingDto: FollowingDto) = runCatching {
         system.followForUserNamed(
-            userNameIdentifiedAs(followedId),
-            userNameIdentifiedAs(followerId))
-        ReceptionistResponse(201, FOLLOWING_CREATED)
+            userNameIdentifiedAs(followingDto.followeeId),
+            userNameIdentifiedAs(followingDto.followerId)
+        )
     }.onFailure {
         transformModelException(it)
     }.getOrThrow()
@@ -63,10 +59,8 @@ class RestReceptionist(private val system: OpenChatSystem) {
         }
     }
 
-    fun followersOf(userId: String): ReceptionistResponse {
-        val followers: List<User> = system.followersOfUserNamed(userNameIdentifiedAs(userId))
-        return okResponseWithUserArrayFrom(followers)
-    }
+    fun followersOf(userId: String) =
+        system.followersOfUserNamed(userNameIdentifiedAs(userId)).map { it.toUserDto(userIdFor(it)) }
 
     fun addPublication(userId: String, publicationTextDto: PublicationTextDto) = runCatching {
         val publication: Publication = system.publishForUserNamed(userNameIdentifiedAs(userId), publicationTextDto.text)
@@ -154,3 +148,5 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
     private fun userIdFor(user: User) = idsByUser.getValue(user)
 }
+
+const val FOLLOWING_CREATED = "Following created."
