@@ -24,6 +24,7 @@ import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
+import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters.PrintRequestAndResponse
 import org.http4k.filter.ServerFilters.CatchAll
 import org.http4k.format.Jackson.auto
@@ -61,56 +62,57 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         Response(OK).body("OpenChat: OK!")
     },
     "/login" bind POST to {
-        val loginDto = loginBodyLens.extract(it)
+        val loginDto = loginBodyLens(it)
         runCatching {
-            userResponseLens.inject(restReceptionist.login(loginDto), Response(OK))
+            Response(OK).with(userResponseLens of restReceptionist.login(loginDto))
         }.onFailure { Response(NOT_FOUND).body(INVALID_CREDENTIALS) }.getOrThrow()
     },
     "/users" bind GET to {
-        userListResponseLens.inject(restReceptionist.users(), Response(OK))
+        userListResponseLens(restReceptionist.users(), Response(OK))
     },
-    "/users" bind POST to { request ->
-        val registrationDto = registrationBodyLens.extract(request)
+    "/users" bind POST to {
+        val registrationDto = registrationBodyLens(it)
         val user = restReceptionist.registerUser(registrationDto)
 
-        userResponseLens.inject(user, Response(CREATED))
+        Response(CREATED).with(userResponseLens of user)
     },
     "/users/{userId}/timeline" bind GET to {
-        val userId = userIdPathLens.extract(it)
+        val userId = userIdPathLens(it)
+        val timeline = restReceptionist.timelineOf(userId)
 
-        publicationListResponseLens.inject(restReceptionist.timelineOf(userId), Response(OK))
+        Response(OK).with(publicationListResponseLens of timeline)
     },
     "/users/{userId}/timeline" bind POST to { request ->
-        val userId = userIdPathLens.extract(request)
-        val publication = publicationBodyLens.extract(request)
+        val userId = userIdPathLens(request)
+        val publication = publicationBodyLens(request)
         val publicationAdded = restReceptionist.addPublication(userId, publication)
 
-        publicationResponseLens.inject(publicationAdded, Response(CREATED))
+        Response(CREATED).with(publicationResponseLens of publicationAdded)
     },
     "/followings/{followerId}/followees" bind GET to {
-        val userId = followerIdPathLens.extract(it)
+        val userId = followerIdPathLens(it)
         val followers = restReceptionist.followersOf(userId)
 
-        userListResponseLens.inject(followers, Response(OK))
+        Response(OK).with(userListResponseLens of followers)
     },
-    "/followings" bind POST to { request ->
-        val followingDto = followingBodyLens.extract(request)
+    "/followings" bind POST to {
+        val followingDto = followingBodyLens(it)
         restReceptionist.followings(followingDto)
 
         Response(CREATED).body(FOLLOWING_CREATED)
     },
     "/users/{userId}/wall" bind GET to {
-        val userId = userIdPathLens.extract(it)
+        val userId = userIdPathLens(it)
         val wall = restReceptionist.wallOf(userId)
 
-        publicationListResponseLens.inject(wall, Response(OK))
+        Response(OK).with(publicationListResponseLens of wall)
     },
     "/publications/{publicationId}/like" bind POST to { request ->
-        val publicationId = publicationIdPathLens.extract(request)
-        val likerDto = likerBodyLens.extract(request)
+        val publicationId = publicationIdPathLens(request)
+        val likerDto = likerBodyLens(request)
         val likesDto = restReceptionist.likePublicationIdentifiedAs(publicationId, likerDto)
 
-        likesResponseLens.inject(likesDto, Response(OK))
+        Response(OK).with(likesResponseLens of likesDto)
     }
 ).withFilter(PrintRequestAndResponse().then(CatchAll()).then(mapFailures()))
 
