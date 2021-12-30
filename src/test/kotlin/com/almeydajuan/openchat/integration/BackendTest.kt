@@ -186,6 +186,24 @@ internal class BackendTest {
         }
 
         @Test
+        fun `user can add a post`() {
+            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val publication = PublicationTextDto("some text")
+            addPublication(juanPerez, publication)
+
+            val timelineResponse = backend(Request(GET, timelineUrlForUser(juanPerez)))
+            assertThat(timelineResponse.status).isEqualTo(OK)
+
+            val timeline = publicationListResponseLens(timelineResponse)
+            assertThat(timeline).hasSize(1)
+
+            val post = timeline.first()
+            assertThat(post.text).isEqualTo(publication.text)
+            assertThat(post.userId).isEqualTo(juanPerez.userId)
+            assertThat(post.likes).isEqualTo(0)
+        }
+
+        @Test
         fun `timeline for user`() {
             val juanPerez = registerUser(createJuanPerezRegistrationDto())
 

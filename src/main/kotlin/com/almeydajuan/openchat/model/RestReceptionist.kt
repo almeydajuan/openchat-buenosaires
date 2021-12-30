@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class RestReceptionist(private val system: OpenChatSystem) {
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
 
     private val idsByUser: MutableMap<User, String> = mutableMapOf()
     private val idsByPublication: MutableMap<Publication, String> = mutableMapOf()
@@ -77,3 +77,5 @@ class RestReceptionist(private val system: OpenChatSystem) {
 const val FOLLOWING_CREATED = "Following created."
 const val INVALID_CREDENTIALS = "Invalid credentials."
 const val INVALID_PUBLICATION = "Invalid post"
+
+const val DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
