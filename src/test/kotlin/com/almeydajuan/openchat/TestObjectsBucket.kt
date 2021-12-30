@@ -9,15 +9,15 @@ import org.junit.jupiter.api.function.Executable
 import java.time.LocalDateTime
 
 object TestObjectsBucket {
-    const val PEPE_SANCHEZ_NAME = "Pepe Sanchez"
-    const val PEPE_SANCHEZ_PASSWORD = "password"
-    const val PEPE_SANCHEZ_ABOUT = "anotherAbout"
-    const val PEPE_SANCHEZ_HOME_PAGE = "www.twitter.com/pepeSanchez"
+    const val PEPE_NAME = "Pepe Sanchez"
+    const val PEPE_PASSWORD = "password"
+    const val PEPE_ABOUT = "anotherAbout"
+    const val PEPE_HOME_PAGE = "www.twitter.com/pepeSanchez"
 
-    const val JUAN_PEREZ_NAME = "Juan Perez"
-    const val JUAN_PEREZ_PASSWORD = "otherPassword"
-    private const val JUAN_PEREZ_ABOUT = "about"
-    private const val JUAN_PEREZ_HOME_PAGE = "www.twitter.com/juanPerez"
+    const val JUAN_NAME = "Juan Perez"
+    const val JUAN_PASSWORD = "otherPassword"
+    private const val JUAN_ABOUT = "about"
+    private const val JUAN_HOME_PAGE = "www.twitter.com/juanPerez"
 
     var now: LocalDateTime = LocalDateTime.now()
 
@@ -25,11 +25,13 @@ object TestObjectsBucket {
         now = newNow
     }
 
-    fun createUserJuanPerez() = User.named(JUAN_PEREZ_NAME, JUAN_PEREZ_ABOUT, JUAN_PEREZ_HOME_PAGE)
+    fun createUserJuanPerez() = User.named(JUAN_NAME, JUAN_ABOUT, JUAN_HOME_PAGE)
 
-    fun createPepeSanchez() = User.named(PEPE_SANCHEZ_NAME, PEPE_SANCHEZ_ABOUT, PEPE_SANCHEZ_HOME_PAGE)
+    fun createPepeSanchez() = User.named(PEPE_NAME, PEPE_ABOUT, PEPE_HOME_PAGE)
 
-    fun createJuanPerezRegistrationDto() = RegistrationDto(JUAN_PEREZ_NAME, JUAN_PEREZ_PASSWORD, JUAN_PEREZ_ABOUT, JUAN_PEREZ_HOME_PAGE)
+    fun createJuanPerezRegistrationDto() = RegistrationDto(JUAN_NAME, JUAN_PASSWORD, JUAN_ABOUT, JUAN_HOME_PAGE)
+
+    fun createPepeSanchezRegistrationDto() = RegistrationDto(PEPE_NAME, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
 
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }

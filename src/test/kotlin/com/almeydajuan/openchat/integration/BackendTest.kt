@@ -1,6 +1,7 @@
 package com.almeydajuan.openchat.integration
 
 import com.almeydajuan.openchat.TestObjectsBucket.createJuanPerezRegistrationDto
+import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchezRegistrationDto
 import com.almeydajuan.openchat.loginBodyLens
 import com.almeydajuan.openchat.model.CANNOT_REGISTER_SAME_USER_TWICE
 import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
@@ -37,7 +38,7 @@ internal class BackendTest {
     inner class RegistrationValidation {
         @Test
         fun `register twice the same user should fail`() {
-            val registrationDto = registerJuanPerez()
+            val registrationDto = registerUser()
 
             val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
             assertThat(registrationResponse.status).isEqualTo(BAD_REQUEST)
@@ -45,8 +46,7 @@ internal class BackendTest {
         }
     }
 
-    private fun registerJuanPerez(): RegistrationDto {
-        val registrationDto = createJuanPerezRegistrationDto()
+    private fun registerUser(registrationDto: RegistrationDto = createJuanPerezRegistrationDto()): RegistrationDto {
         val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
         assertThat(registrationResponse.status).isEqualTo(CREATED)
         return registrationDto
@@ -56,7 +56,7 @@ internal class BackendTest {
     inner class LoginValidation {
         @Test
         fun `login user`() {
-            val registrationDto = registerJuanPerez()
+            val registrationDto = registerUser()
 
             val loginResponse = backend(loginBodyLens.set(
                     target = Request(POST, "/login"),
@@ -77,7 +77,7 @@ internal class BackendTest {
 
         @Test
         fun `should fail when login with wrong password`() {
-            val registrationDto = registerJuanPerez()
+            val registrationDto = registerUser()
 
             val loginResponse = backend(loginBodyLens.set(
                     target = Request(POST, "/login"),
@@ -92,18 +92,24 @@ internal class BackendTest {
     inner class UsersValidation {
         @Test
         fun `find all users`() {
-            val registrationDto = registerJuanPerez()
+            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val pepeSanchez = registerUser(createPepeSanchezRegistrationDto())
 
             val usersResponse = backend(Request(GET, "/users"))
             assertThat(usersResponse.status).isEqualTo(OK)
 
             val userList = userListResponseLens.get(usersResponse)
-            assertThat(userList.size).isEqualTo(1)
+            assertThat(userList.size).isEqualTo(2)
 
-            val registeredUser = userList.first()
-            assertThat(registeredUser.username).isEqualTo(registrationDto.username)
-            assertThat(registeredUser.about).isEqualTo(registrationDto.about)
-            assertThat(registeredUser.homePage).isEqualTo(registrationDto.homePage)
+            val registeredJuanPerez = userList.first()
+            assertThat(registeredJuanPerez.username).isEqualTo(juanPerez.username)
+            assertThat(registeredJuanPerez.about).isEqualTo(juanPerez.about)
+            assertThat(registeredJuanPerez.homePage).isEqualTo(juanPerez.homePage)
+
+            val registeredPepeSanchez = userList.last()
+            assertThat(registeredPepeSanchez.username).isEqualTo(pepeSanchez.username)
+            assertThat(registeredPepeSanchez.about).isEqualTo(pepeSanchez.about)
+            assertThat(registeredPepeSanchez.homePage).isEqualTo(pepeSanchez.homePage)
         }
     }
 }
