@@ -6,11 +6,10 @@ class OpenChatSystem {
     private val userCards: MutableMap<String, UserCard> = mutableMapOf()
     private val likersByPublication: MutableMap<Publication, MutableSet<Publisher>> = mutableMapOf()
 
-    fun register(userName: String, password: String, about: String, homePage: String): User {
-        assertIsNotDuplicated(userName)
-        val newUser = User(userName, about, homePage)
-        userCards[userName] = UserCard(newUser, password, Publisher(newUser))
-        return newUser
+    fun register(user: User, password: String): User {
+        assertIsNotDuplicated(user.name)
+        userCards[user.name] = UserCard(user, password, Publisher(user))
+        return user
     }
 
     fun hasUsers() = userCards.isNotEmpty()

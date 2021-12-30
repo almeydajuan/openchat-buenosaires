@@ -12,10 +12,8 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
     fun registerUser(registrationDto: RegistrationDto): UserDto {
         val registeredUser: User = system.register(
-            userName = registrationDto.username,
-            password = registrationDto.password,
-            about = registrationDto.about,
-            homePage = registrationDto.homePage
+                user = User(registrationDto.username, registrationDto.about, registrationDto.homePage),
+                password = registrationDto.password
         )
         val registeredUserId = UUID.randomUUID().toString()
         idsByUser[registeredUser] = registeredUserId
