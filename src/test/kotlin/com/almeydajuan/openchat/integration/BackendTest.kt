@@ -274,9 +274,11 @@ internal class BackendTest {
 
             val users = listOf(juan, diego, carla)
 
-            addFollowing(juan, diego)
-            addFollowing(juan, carla)
-            (1..4).forEach {
+            addFollowing(diego, juan)
+            addFollowing(carla, juan)
+            val postsRange = 1..10
+
+            postsRange.forEach {
                 addPublication(users.random(), PublicationTextDto(it.toString()))
                 TestUtilities.delayOneSecond()
             }
@@ -284,8 +286,9 @@ internal class BackendTest {
             val wallResponse = backend(Request(GET, "/users/${juan.userId}/wall"))
             assertThat(wallResponse.status).isEqualTo(OK)
 
-            // val publications = publicationListResponseLens(wallResponse)
-            // assertThat(publications).hasSize(4)
+            val publications = publicationListResponseLens(wallResponse)
+            assertThat(publications).hasSize(postsRange.count())
+            assertThat(publications.map { it.text }).isEqualTo(postsRange.reversed().map { it.toString() })
         }
     }
 }
