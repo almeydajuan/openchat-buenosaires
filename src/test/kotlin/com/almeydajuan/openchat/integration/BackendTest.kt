@@ -10,6 +10,7 @@ import com.almeydajuan.openchat.likerBodyLens
 import com.almeydajuan.openchat.loginBodyLens
 import com.almeydajuan.openchat.model.CANNOT_REGISTER_SAME_USER_TWICE
 import com.almeydajuan.openchat.model.FollowingDto
+import com.almeydajuan.openchat.model.INAPPROPRIATE_WORD
 import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
 import com.almeydajuan.openchat.model.LikerDto
 import com.almeydajuan.openchat.model.LoginDto
@@ -241,6 +242,16 @@ internal class BackendTest {
 
             val updatedPost = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(juanPerez)))).first()
             assertThat(updatedPost.likes).isEqualTo(1)
+        }
+
+        @Test
+        fun `user cannot add inappropriate post`() {
+            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val inappropriatePost = PublicationTextDto("orange")
+
+            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), inappropriatePost))
+            assertThat(publicationResponse.status).isEqualTo(BAD_REQUEST)
+            assertThat(publicationResponse.bodyString()).isEqualTo(INAPPROPRIATE_WORD)
         }
 
         private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
