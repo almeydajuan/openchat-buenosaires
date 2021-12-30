@@ -74,13 +74,13 @@ internal class BackendTest {
         assertThat(followingResponse.status).isEqualTo(CREATED)
     }
 
-    private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto): PublicationDto {
-        val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
+    private fun addPublication(user: UserDto, publication: PublicationTextDto): PublicationDto {
+        val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(user)), publication))
         assertThat(publicationResponse.status).isEqualTo(CREATED)
         return publicationResponseLens(publicationResponse)
     }
 
-    private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
+    private fun timelineUrlForUser(user: UserDto) = "/users/${user.userId}/timeline"
 
     @Nested
     inner class LoginValidation {
@@ -136,15 +136,15 @@ internal class BackendTest {
 
         @Test
         fun `find all users`() {
-            val juanPerez = registerUser(createRegistrationDto("juan"))
-            val pepeSanchez = registerUser(createRegistrationDto("pepe"))
+            val juan = registerUser(createRegistrationDto("juan"))
+            val carlos = registerUser(createRegistrationDto("carlos"))
 
             val usersResponse = backend(Request(GET, "/users"))
             assertThat(usersResponse.status).isEqualTo(OK)
 
             val userList = userListResponseLens(usersResponse)
             assertThat(userList.size).isEqualTo(2)
-            assertThat(userList).isEqualTo(listOf(juanPerez, pepeSanchez))
+            assertThat(userList).isEqualTo(listOf(juan, carlos))
         }
     }
 

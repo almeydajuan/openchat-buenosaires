@@ -23,24 +23,13 @@ object TestUtilities {
 }
 
 object TestFactory {
-    const val PEPE_NAME = "Pepe Sanchez"
-    const val PEPE_PASSWORD = "password"
-    const val PEPE_ABOUT = "anotherAbout"
-    const val PEPE_HOME_PAGE = "www.twitter.com/pepeSanchez"
-
-    const val JUAN_NAME = "Juan Perez"
-    const val JUAN_PASSWORD = "otherPassword"
-    private const val JUAN_ABOUT = "about"
-    private const val JUAN_HOME_PAGE = "www.twitter.com/juanPerez"
-
-    private const val USER_ABOUT = "userAbout"
-    private const val USER_HOME_PAGE = "www.twitter.com/user"
+    const val USER_NAME = "username"
+    const val ANOTHER_USER_NAME = "anotherUser"
+    const val USER_PASSWORD = "userPassword"
+    const val USER_ABOUT = "userAbout"
+    const val USER_HOME_PAGE = "www.twitter.com/user"
 
     fun createUserNamed(name: String) = User.named(name, USER_ABOUT, USER_HOME_PAGE)
 
-    fun createUserJuanPerez() = User.named(JUAN_NAME, JUAN_ABOUT, JUAN_HOME_PAGE)
-
-    fun createPepeSanchez() = User.named(PEPE_NAME, PEPE_ABOUT, PEPE_HOME_PAGE)
-
-    fun createRegistrationDto(name: String) = RegistrationDto(name, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
+    fun createRegistrationDto(name: String) = RegistrationDto(name, USER_PASSWORD, USER_ABOUT, USER_HOME_PAGE)
 }
