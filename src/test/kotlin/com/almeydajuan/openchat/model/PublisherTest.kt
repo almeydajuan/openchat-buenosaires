@@ -13,14 +13,14 @@ internal class PublisherTest {
 
     @Test
     fun createdPublisherHasNoFollowers() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         assertFalse(createdPublisher.hasFollowers())
     }
 
     @Test
     fun publisherCanFollowOtherPublisher() {
-        val followed = createPepeSanchez()
-        val follower = createJuanPerez()
+        val followed = createSomeUser()
+        val follower = createSomeUser("otherUser")
 
         followed.followedBy(follower)
 
@@ -31,7 +31,7 @@ internal class PublisherTest {
 
     @Test
     fun publisherCanNotFollowSelf() {
-        val follower = createPepeSanchez()
+        val follower = createSomeUser()
 
         assertThrowsModelExceptionWithErrorMessage(CANNOT_FOLLOW_SELF) { follower.followedBy(follower) }
         assertThat(follower.hasFollowers()).isFalse
@@ -39,8 +39,8 @@ internal class PublisherTest {
 
     @Test
     fun publisherCanNotFollowSamePublisherTwice() {
-        val followed = createPepeSanchez()
-        val follower = createJuanPerez()
+        val followed = createSomeUser()
+        val follower = createSomeUser("otherUser")
 
         followed.followedBy(follower)
 
@@ -53,13 +53,13 @@ internal class PublisherTest {
 
     @Test
     fun createdPublisherHasNoPublications() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         assertFalse(createdPublisher.hasPublications())
     }
 
     @Test
     fun publisherCanPublishMessages() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "a message"
 
@@ -74,7 +74,7 @@ internal class PublisherTest {
 
     @Test
     fun timelineHasPublisherPublicationsSortedWithLatestPublicationsFirst() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "a message"
 
@@ -87,7 +87,7 @@ internal class PublisherTest {
 
     @Test
     fun wallContainsPublisherPublications() {
-        val follower = createPepeSanchez()
+        val follower = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "a message"
 
@@ -99,8 +99,8 @@ internal class PublisherTest {
 
     @Test
     fun wallContainsFollowersPublications() {
-        val followed = createPepeSanchez()
-        val follower = createJuanPerez()
+        val followed = createSomeUser()
+        val follower = createSomeUser("otherUser")
         followed.followedBy(follower)
 
         val publicationTime = LocalDateTime.now()
@@ -113,8 +113,8 @@ internal class PublisherTest {
 
     @Test
     fun wallContainsFollowersPublicationsWithLatestPublicationsFirst() {
-        val followed = createPepeSanchez()
-        val follower = createJuanPerez()
+        val followed = createSomeUser()
+        val follower = createSomeUser("otherUser")
         followed.followedBy(follower)
 
         val publicationTime = LocalDateTime.now()
@@ -130,7 +130,7 @@ internal class PublisherTest {
 
     @Test
     fun canNotPublishWithInappropriateWord() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "elephant"
 
@@ -140,7 +140,7 @@ internal class PublisherTest {
 
     @Test
     fun canNotPublishWithInappropriateWordInUpperCase() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "ELEPHANT"
 
@@ -150,7 +150,7 @@ internal class PublisherTest {
 
     @Test
     fun canNotPublishAMessageContainingInappropriateWord() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
         val message = "abc ELEPHANT xx"
 
@@ -160,7 +160,7 @@ internal class PublisherTest {
 
     @Test
     fun canNotPublishAnyInappropriateWord() {
-        val createdPublisher = createPepeSanchez()
+        val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
 
         listOf("elephant", "ice cream", "orange").forEach {
@@ -170,11 +170,7 @@ internal class PublisherTest {
         }
     }
 
-    private fun createJuanPerez(): Publisher {
-        return Publisher.relatedTo(TestFactory.createUserJuanPerez())
-    }
-
-    private fun createPepeSanchez(): Publisher {
-        return Publisher.relatedTo(TestFactory.createPepeSanchez())
+    private fun createSomeUser(user: String = "user"): Publisher {
+        return Publisher.relatedTo(TestFactory.createUserNamed(user))
     }
 }

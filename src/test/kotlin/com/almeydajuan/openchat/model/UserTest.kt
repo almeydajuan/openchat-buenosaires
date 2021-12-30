@@ -1,7 +1,6 @@
 package com.almeydajuan.openchat.model
 
-import com.almeydajuan.openchat.TestFactory.PEPE_NAME
-import com.almeydajuan.openchat.TestFactory.createPepeSanchez
+import com.almeydajuan.openchat.TestFactory.createUserNamed
 import com.almeydajuan.openchat.TestUtilities.assertThrowsModelExceptionWithErrorMessage
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -18,13 +17,18 @@ internal class UserTest {
 
     @Test
     fun canCreateUserWithNoBlankName() {
-        val createdUser: User = createPepeSanchez()
-        assertTrue(createdUser.isNamed(PEPE_NAME))
+        val userName = "user"
+        val createdUser = createUserNamed(userName)
+
+        assertTrue(createdUser.name.isNotBlank())
+        assertTrue(createdUser.isNamed(userName))
     }
 
     @Test
     fun isNamedReturnsFalseWhenAskedWithOtherName() {
-        val createdUser: User = createPepeSanchez()
-        assertFalse(createdUser.isNamed(PEPE_NAME + "x"))
+        val userName = "user"
+        val createdUser = createUserNamed(userName)
+
+        assertFalse(createdUser.isNamed(userName + "x"))
     }
 }

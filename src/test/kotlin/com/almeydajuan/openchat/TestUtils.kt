@@ -33,6 +33,11 @@ object TestFactory {
     private const val JUAN_ABOUT = "about"
     private const val JUAN_HOME_PAGE = "www.twitter.com/juanPerez"
 
+    private const val USER_ABOUT = "userAbout"
+    private const val USER_HOME_PAGE = "www.twitter.com/user"
+
+    fun createUserNamed(name: String) = User.named(name, USER_ABOUT, USER_HOME_PAGE)
+
     fun createUserJuanPerez() = User.named(JUAN_NAME, JUAN_ABOUT, JUAN_HOME_PAGE)
 
     fun createPepeSanchez() = User.named(PEPE_NAME, PEPE_ABOUT, PEPE_HOME_PAGE)
