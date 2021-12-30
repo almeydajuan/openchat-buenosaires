@@ -2,8 +2,11 @@ package com.almeydajuan.openchat.integration
 
 import com.almeydajuan.openchat.TestObjectsBucket.createJuanPerezRegistrationDto
 import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchezRegistrationDto
+import com.almeydajuan.openchat.TestObjectsBucket.createRegistrationDto
+import com.almeydajuan.openchat.followingBodyLens
 import com.almeydajuan.openchat.loginBodyLens
 import com.almeydajuan.openchat.model.CANNOT_REGISTER_SAME_USER_TWICE
+import com.almeydajuan.openchat.model.FollowingDto
 import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
@@ -138,6 +141,28 @@ internal class BackendTest {
 
             val followees = userListResponseLens.get(followeesResponse)
             assertThat(followees).isEmpty()
+        }
+
+        @Test
+        fun `find all followees for user`() {
+            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val maria = registerUser(createRegistrationDto("maria"))
+            val diego = registerUser(createRegistrationDto("diego"))
+
+            addFollowing(FollowingDto(maria.userId, juanPerez.userId))
+            addFollowing(FollowingDto(diego.userId, juanPerez.userId))
+
+            val followeesResponse = backend(Request(GET, "/followings/${juanPerez.userId}/followees"))
+            assertThat(followeesResponse.status).isEqualTo(OK)
+
+            val followees = userListResponseLens.get(followeesResponse)
+            assertThat(followees).hasSize(2)
+            assertThat(followees).isEqualTo(listOf(maria, diego))
+        }
+
+        private fun addFollowing(followingDto: FollowingDto) {
+            val followingResponse = backend(followingBodyLens.set(Request(POST, "/followings"), followingDto))
+            assertThat(followingResponse.status).isEqualTo(CREATED)
         }
     }
 }

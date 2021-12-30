@@ -33,6 +33,8 @@ object TestObjectsBucket {
 
     fun createPepeSanchezRegistrationDto() = RegistrationDto(PEPE_NAME, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
 
+    fun createRegistrationDto(name: String) = RegistrationDto(name, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
+
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }
 
