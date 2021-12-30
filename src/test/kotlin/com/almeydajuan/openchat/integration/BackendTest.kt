@@ -1,10 +1,9 @@
 package com.almeydajuan.openchat.integration
 
-import com.almeydajuan.openchat.TestObjectsBucket
-import com.almeydajuan.openchat.TestObjectsBucket.createJuanPerezRegistrationDto
-import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchezRegistrationDto
-import com.almeydajuan.openchat.TestObjectsBucket.createRegistrationDto
-import com.almeydajuan.openchat.TestObjectsBucket.now
+import com.almeydajuan.openchat.TestFactory.createJuanPerezRegistrationDto
+import com.almeydajuan.openchat.TestFactory.createPepeSanchezRegistrationDto
+import com.almeydajuan.openchat.TestFactory.createRegistrationDto
+import com.almeydajuan.openchat.TestUtilities
 import com.almeydajuan.openchat.followingBodyLens
 import com.almeydajuan.openchat.likerBodyLens
 import com.almeydajuan.openchat.loginBodyLens
@@ -49,6 +48,7 @@ internal class BackendTest {
 
     @Nested
     inner class RegistrationValidation {
+
         @Test
         fun `register twice the same user should fail`() {
             val registrationDto = createJuanPerezRegistrationDto()
@@ -66,8 +66,24 @@ internal class BackendTest {
         return userResponseLens(registrationResponse)
     }
 
+    private fun addFollowing(follower: UserDto, followee: UserDto) {
+        val followingResponse = backend(followingBodyLens.set(
+                target = Request(POST, "/followings"),
+                value = FollowingDto(follower.userId, followee.userId))
+        )
+        assertThat(followingResponse.status).isEqualTo(CREATED)
+    }
+
+    private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto) {
+        val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
+        assertThat(publicationResponse.status).isEqualTo(CREATED)
+    }
+
+    private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
+
     @Nested
     inner class LoginValidation {
+
         @Test
         fun `login user`() {
             val registrationDto = createJuanPerezRegistrationDto()
@@ -106,6 +122,7 @@ internal class BackendTest {
 
     @Nested
     inner class UsersValidation {
+
         @Test
         fun `find no one`() {
             val usersResponse = backend(Request(GET, "/users"))
@@ -140,6 +157,7 @@ internal class BackendTest {
 
     @Nested
     inner class FolloweesValidation {
+
         @Test
         fun `new user has no followees`() {
             val juanPerez = registerUser(createJuanPerezRegistrationDto())
@@ -157,8 +175,8 @@ internal class BackendTest {
             val maria = registerUser(createRegistrationDto("maria"))
             val diego = registerUser(createRegistrationDto("diego"))
 
-            addFollowing(FollowingDto(maria.userId, juanPerez.userId))
-            addFollowing(FollowingDto(diego.userId, juanPerez.userId))
+            addFollowing(maria, juanPerez)
+            addFollowing(diego, juanPerez)
 
             val followeesResponse = backend(Request(GET, "/followings/${juanPerez.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
@@ -166,11 +184,6 @@ internal class BackendTest {
             val followees = userListResponseLens(followeesResponse)
             assertThat(followees).hasSize(2)
             assertThat(followees).isEqualTo(listOf(maria, diego))
-        }
-
-        private fun addFollowing(followingDto: FollowingDto) {
-            val followingResponse = backend(followingBodyLens.set(Request(POST, "/followings"), followingDto))
-            assertThat(followingResponse.status).isEqualTo(CREATED)
         }
     }
 
@@ -206,11 +219,6 @@ internal class BackendTest {
             assertThat(post.likes).isEqualTo(0)
         }
 
-        private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto) {
-            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
-            assertThat(publicationResponse.status).isEqualTo(CREATED)
-        }
-
         @Test
         fun `timeline for user`() {
             val juanPerez = registerUser(createJuanPerezRegistrationDto())
@@ -218,7 +226,7 @@ internal class BackendTest {
             val firstPublication = PublicationTextDto("some text")
             val secondPublication = PublicationTextDto("other text")
             addPublication(juanPerez, firstPublication)
-            TestObjectsBucket.changeNowTo(now.plusMinutes(1))
+            TestUtilities.delayOneSecond()
             addPublication(juanPerez, secondPublication)
 
             val timelineResponse = backend(Request(GET, timelineUrlForUser(juanPerez)))
@@ -253,7 +261,31 @@ internal class BackendTest {
             assertThat(publicationResponse.status).isEqualTo(BAD_REQUEST)
             assertThat(publicationResponse.bodyString()).isEqualTo(INAPPROPRIATE_WORD)
         }
+    }
 
-        private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
+    @Nested
+    inner class WallValidation {
+
+        @Test
+        fun `retrieve user's wall`() {
+            val juan = registerUser(createRegistrationDto("juan"))
+            val diego = registerUser(createRegistrationDto("diego"))
+            val carla = registerUser(createRegistrationDto("carla"))
+
+            val users = listOf(juan, diego, carla)
+
+            addFollowing(juan, diego)
+            addFollowing(juan, carla)
+            (1..4).forEach {
+                addPublication(users.random(), PublicationTextDto(it.toString()))
+                TestUtilities.delayOneSecond()
+            }
+
+            val wallResponse = backend(Request(GET, "/users/${juan.userId}/wall"))
+            assertThat(wallResponse.status).isEqualTo(OK)
+
+            // val publications = publicationListResponseLens(wallResponse)
+            // assertThat(publications).hasSize(4)
+        }
     }
 }

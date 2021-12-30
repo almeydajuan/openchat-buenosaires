@@ -1,15 +1,14 @@
 package com.almeydajuan.openchat.model
 
-import com.almeydajuan.openchat.TestObjectsBucket
-import com.almeydajuan.openchat.TestObjectsBucket.JUAN_NAME
-import com.almeydajuan.openchat.TestObjectsBucket.JUAN_PASSWORD
-import com.almeydajuan.openchat.TestObjectsBucket.PEPE_ABOUT
-import com.almeydajuan.openchat.TestObjectsBucket.PEPE_HOME_PAGE
-import com.almeydajuan.openchat.TestObjectsBucket.PEPE_NAME
-import com.almeydajuan.openchat.TestObjectsBucket.PEPE_PASSWORD
-import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchez
-import com.almeydajuan.openchat.TestObjectsBucket.createUserJuanPerez
-import com.almeydajuan.openchat.TestObjectsBucket.now
+import com.almeydajuan.openchat.TestFactory.JUAN_NAME
+import com.almeydajuan.openchat.TestFactory.JUAN_PASSWORD
+import com.almeydajuan.openchat.TestFactory.PEPE_ABOUT
+import com.almeydajuan.openchat.TestFactory.PEPE_HOME_PAGE
+import com.almeydajuan.openchat.TestFactory.PEPE_NAME
+import com.almeydajuan.openchat.TestFactory.PEPE_PASSWORD
+import com.almeydajuan.openchat.TestFactory.createPepeSanchez
+import com.almeydajuan.openchat.TestFactory.createUserJuanPerez
+import com.almeydajuan.openchat.TestUtilities
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -63,7 +62,7 @@ internal class OpenChatSystemTest {
         val system = createSystem()
         registerPepeSanchez(system)
 
-        TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage(CANNOT_REGISTER_SAME_USER_TWICE) { registerPepeSanchez(system) }
+        TestUtilities.assertThrowsModelExceptionWithErrorMessage(CANNOT_REGISTER_SAME_USER_TWICE) { registerPepeSanchez(system) }
 
         assertTrue(system.hasUsers())
         assertTrue(system.hasUserNamed(PEPE_NAME))
@@ -122,7 +121,7 @@ internal class OpenChatSystemTest {
     fun `no registered user cannot publish`() {
         val system = createSystem()
 
-        TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
+        TestUtilities.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
             system.publishForUserNamed(PEPE_NAME, "hello")
         }
     }
@@ -130,7 +129,7 @@ internal class OpenChatSystemTest {
     @Test
     fun `no registered user cannot ask its timeline`() {
         val system = createSystem()
-        TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
+        TestUtilities.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
             system.timeLineForUserNamed(PEPE_NAME)
         }
     }
@@ -156,7 +155,7 @@ internal class OpenChatSystemTest {
         system.followForUserNamed(PEPE_NAME, JUAN_NAME)
         val followedPublication = system.publishForUserNamed(PEPE_NAME, "hello")
 
-        TestObjectsBucket.changeNowTo(now.plusSeconds(1))
+        TestUtilities.delayOneSecond()
         val followerPublication = system.publishForUserNamed(JUAN_NAME, "bye")
         val wall = system.wallForUserNamed(PEPE_NAME)
 
@@ -190,9 +189,9 @@ internal class OpenChatSystemTest {
     fun `cannot like non published publication`() {
         val system = createSystem()
         val registeredUser = registerPepeSanchez(system)
-        val publication = Publication.madeBy(Publisher.relatedTo(registeredUser), "hello", now)
+        val publication = Publication.madeBy(Publisher.relatedTo(registeredUser), "hello", TestUtilities.now)
 
-        TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage(INVALID_PUBLICATION) {
+        TestUtilities.assertThrowsModelExceptionWithErrorMessage(INVALID_PUBLICATION) {
             system.likePublication(publication, PEPE_NAME)
         }
     }
@@ -217,7 +216,7 @@ internal class OpenChatSystemTest {
         registerPepeSanchez(system)
         val publication: Publication = system.publishForUserNamed(PEPE_NAME, "hello")
 
-        TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
+        TestUtilities.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
             system.likePublication(publication, JUAN_NAME)
         }
     }

@@ -1,7 +1,7 @@
 package com.almeydajuan.openchat.model
 
-import com.almeydajuan.openchat.TestObjectsBucket
-import com.almeydajuan.openchat.TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage
+import com.almeydajuan.openchat.TestFactory
+import com.almeydajuan.openchat.TestUtilities.assertThrowsModelExceptionWithErrorMessage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -171,10 +171,10 @@ internal class PublisherTest {
     }
 
     private fun createJuanPerez(): Publisher {
-        return Publisher.relatedTo(TestObjectsBucket.createUserJuanPerez())
+        return Publisher.relatedTo(TestFactory.createUserJuanPerez())
     }
 
     private fun createPepeSanchez(): Publisher {
-        return Publisher.relatedTo(TestObjectsBucket.createPepeSanchez())
+        return Publisher.relatedTo(TestFactory.createPepeSanchez())
     }
 }
