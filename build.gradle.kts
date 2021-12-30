@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.6.10"
 }
 
 group = "com.almeydajuan"
@@ -18,12 +18,26 @@ dependencies {
     implementation("org.http4k:http4k-core")
     implementation("org.http4k:http4k-server-apache")
     implementation("org.http4k:http4k-format-jackson")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "11"
+            apiVersion = "1.6"
+            languageVersion = "1.6"
+        }
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
 }

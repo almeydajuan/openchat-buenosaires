@@ -14,9 +14,12 @@ class OpenChatSystem {
         return newUser
     }
 
+    fun hasUsers() = userCards.isNotEmpty()
+
+    fun numberOfUsers() = userCards.size
+
     //Uso userCardForUserName en vez de hacer userCards.get para que la búsqueda por nombre esté en un solo lugar
-    private fun hasUserNamed(potentialUserName: String) =
-        userCardForUserName(potentialUserName).isPresent
+    fun hasUserNamed(potentialUserName: String) = userCardForUserName(potentialUserName) != null
 
     fun publishForUserNamed(userName: String, message: String): Publication {
         val newPublication = publisherForUserNamed(userName).publish(message, LocalDateTime.now())
@@ -44,13 +47,17 @@ class OpenChatSystem {
 
     fun authenticateUser(userName: String, password: String): User? {
         val userCard = userCards[userName]
-        return if (userCard != null && userCard.isPassword(password)) { userCard.user } else { null }
+        return if (userCard != null && userCard.isPassword(password)) {
+            userCard.user
+        } else {
+            null
+        }
     }
 
-    private fun userCardForUserName(userName: String) = Optional.ofNullable(userCards[userName])
+    private fun userCardForUserName(userName: String): UserCard? = userCards[userName]
 
     private fun publisherForUserNamed(userName: String) =
-        userCardForUserName(userName).map { it.publisher }.orElseThrow { ModelException(USER_NOT_REGISTERED) }
+            userCardForUserName(userName)?.publisher ?: throw ModelException(USER_NOT_REGISTERED)
 
     fun likesOf(publication: Publication) = likersOf(publication).size
 
@@ -61,7 +68,7 @@ class OpenChatSystem {
     }
 
     private fun likersOf(publication: Publication) =
-        likersByPublication[publication] ?: throw ModelException(INVALID_PUBLICATION)
+            likersByPublication[publication] ?: throw ModelException(INVALID_PUBLICATION)
 
     private data class UserCard(val user: User, private val password: String, val publisher: Publisher) {
         fun isPassword(potentialPassword: String): Boolean {
