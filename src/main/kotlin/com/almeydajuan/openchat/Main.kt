@@ -76,7 +76,7 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         val userId = userIdPathLens(it)
         val timeline = restReceptionist.timelineOf(userId)
 
-        Response(OK).with(publicationListResponseLens of timeline)
+        publicationListResponseLens.inject(timeline, Response(OK))
     },
     "/users/{userId}/timeline" bind POST to { request ->
         val userId = userIdPathLens(request)

@@ -1,5 +1,7 @@
 package com.almeydajuan.openchat.model
 
+import java.util.UUID
+
 data class RegistrationDto(
     val username: String,
     val password: String,
@@ -24,7 +26,7 @@ data class PublicationTextDto(
 )
 
 data class PublicationDto(
-    val postId: String,
+    val postId: String = UUID.randomUUID().toString(),
     val userId: String,
     val text: String,
     val dateTime: String,
