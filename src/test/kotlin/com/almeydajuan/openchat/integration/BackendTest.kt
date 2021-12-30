@@ -1,7 +1,6 @@
 package com.almeydajuan.openchat.integration
 
 import com.almeydajuan.openchat.TestFactory.createJuanPerezRegistrationDto
-import com.almeydajuan.openchat.TestFactory.createPepeSanchezRegistrationDto
 import com.almeydajuan.openchat.TestFactory.createRegistrationDto
 import com.almeydajuan.openchat.TestUtilities
 import com.almeydajuan.openchat.followingBodyLens
@@ -14,6 +13,7 @@ import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
 import com.almeydajuan.openchat.model.LikerDto
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
+import com.almeydajuan.openchat.model.PublicationDto
 import com.almeydajuan.openchat.model.PublicationTextDto
 import com.almeydajuan.openchat.model.RegistrationDto
 import com.almeydajuan.openchat.model.RestReceptionist
@@ -21,6 +21,7 @@ import com.almeydajuan.openchat.model.UserDto
 import com.almeydajuan.openchat.newBackend
 import com.almeydajuan.openchat.publicationBodyLens
 import com.almeydajuan.openchat.publicationListResponseLens
+import com.almeydajuan.openchat.publicationResponseLens
 import com.almeydajuan.openchat.registrationBodyLens
 import com.almeydajuan.openchat.userListResponseLens
 import com.almeydajuan.openchat.userResponseLens
@@ -60,7 +61,7 @@ internal class BackendTest {
         }
     }
 
-    private fun registerUser(registrationDto: RegistrationDto): UserDto {
+    private fun registerUser(registrationDto: RegistrationDto = createRegistrationDto("user")): UserDto {
         val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
         assertThat(registrationResponse.status).isEqualTo(CREATED)
         return userResponseLens(registrationResponse)
@@ -74,9 +75,10 @@ internal class BackendTest {
         assertThat(followingResponse.status).isEqualTo(CREATED)
     }
 
-    private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto) {
+    private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto): PublicationDto {
         val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
         assertThat(publicationResponse.status).isEqualTo(CREATED)
+        return publicationResponseLens(publicationResponse)
     }
 
     private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
@@ -127,6 +129,7 @@ internal class BackendTest {
         fun `find no one`() {
             val usersResponse = backend(Request(GET, "/users"))
             assertThat(usersResponse.status).isEqualTo(OK)
+            assertThat(usersResponse.bodyString()).isEqualTo("[]")
 
             val userList = userListResponseLens(usersResponse)
             assertThat(userList).isEmpty()
@@ -134,24 +137,15 @@ internal class BackendTest {
 
         @Test
         fun `find all users`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
-            val pepeSanchez = registerUser(createPepeSanchezRegistrationDto())
+            val juanPerez = registerUser(createRegistrationDto("juan"))
+            val pepeSanchez = registerUser(createRegistrationDto("pepe"))
 
             val usersResponse = backend(Request(GET, "/users"))
             assertThat(usersResponse.status).isEqualTo(OK)
 
             val userList = userListResponseLens(usersResponse)
             assertThat(userList.size).isEqualTo(2)
-
-            val registeredJuanPerez = userList.first()
-            assertThat(registeredJuanPerez.username).isEqualTo(juanPerez.username)
-            assertThat(registeredJuanPerez.about).isEqualTo(juanPerez.about)
-            assertThat(registeredJuanPerez.homePage).isEqualTo(juanPerez.homePage)
-
-            val registeredPepeSanchez = userList.last()
-            assertThat(registeredPepeSanchez.username).isEqualTo(pepeSanchez.username)
-            assertThat(registeredPepeSanchez.about).isEqualTo(pepeSanchez.about)
-            assertThat(registeredPepeSanchez.homePage).isEqualTo(pepeSanchez.homePage)
+            assertThat(userList).isEqualTo(listOf(juanPerez, pepeSanchez))
         }
     }
 
@@ -164,6 +158,7 @@ internal class BackendTest {
 
             val followeesResponse = backend(Request(GET, "/followings/${juanPerez.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
+            assertThat(followeesResponse.bodyString()).isEqualTo("[]")
 
             val followees = userListResponseLens(followeesResponse)
             assertThat(followees).isEmpty()
@@ -192,10 +187,11 @@ internal class BackendTest {
 
         @Test
         fun `empty timeline for new user`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val user = registerUser()
 
-            val timelineResponse = backend(Request(GET, timelineUrlForUser(juanPerez)))
+            val timelineResponse = backend(Request(GET, timelineUrlForUser(user)))
             assertThat(timelineResponse.status).isEqualTo(OK)
+            assertThat(timelineResponse.bodyString()).isEqualTo("[]")
 
             val timeline = publicationListResponseLens(timelineResponse)
             assertThat(timeline).isEmpty()
@@ -203,61 +199,64 @@ internal class BackendTest {
 
         @Test
         fun `user can add a post`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
-            val publication = PublicationTextDto("some text")
-            addPublication(juanPerez, publication)
+            val user = registerUser()
+            val publicationDto = PublicationTextDto("some text")
+            val publication = addPublication(user, publicationDto)
 
-            val timelineResponse = backend(Request(GET, timelineUrlForUser(juanPerez)))
+            val timelineResponse = backend(Request(GET, timelineUrlForUser(user)))
             assertThat(timelineResponse.status).isEqualTo(OK)
+            assertThat(timelineResponse.bodyString()).isEqualTo(
+                    "[{\"postId\":\"${publication.postId}\",\"userId\":\"${user.userId}\",\"text\":\"${publicationDto.text}\",\"dateTime\":\"${publication.dateTime}\",\"likes\":0}]"
+            )
 
             val timeline = publicationListResponseLens(timelineResponse)
             assertThat(timeline).hasSize(1)
 
             val post = timeline.first()
-            assertThat(post.text).isEqualTo(publication.text)
-            assertThat(post.userId).isEqualTo(juanPerez.userId)
+            assertThat(post).isEqualTo(publication)
+            assertThat(post.userId).isEqualTo(user.userId)
             assertThat(post.likes).isEqualTo(0)
         }
 
         @Test
         fun `timeline for user`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val user = registerUser()
 
-            val firstPublication = PublicationTextDto("some text")
-            val secondPublication = PublicationTextDto("other text")
-            addPublication(juanPerez, firstPublication)
-            TestUtilities.delayOneSecond()
-            addPublication(juanPerez, secondPublication)
+            val rangeOfPublications = (1..5).map { it.toString() }
 
-            val timelineResponse = backend(Request(GET, timelineUrlForUser(juanPerez)))
+            rangeOfPublications.forEach {
+                addPublication(user, PublicationTextDto(it))
+                TestUtilities.delayOneSecond()
+            }
+            val timelineResponse = backend(Request(GET, timelineUrlForUser(user)))
             assertThat(timelineResponse.status).isEqualTo(OK)
 
             val timeline = publicationListResponseLens(timelineResponse)
-            assertThat(timeline).hasSize(2)
-            assertThat(timeline.first().text).isEqualTo(secondPublication.text)
-            assertThat(timeline.last().text).isEqualTo(firstPublication.text)
+            assertThat(timeline).hasSize(rangeOfPublications.count())
+            assertThat(timeline.map { it.text }).isEqualTo(rangeOfPublications.reversed())
         }
 
         @Test
         fun `user can like a post`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
-            addPublication(juanPerez, PublicationTextDto("some text"))
+            val user = registerUser()
+            addPublication(user, PublicationTextDto("some text"))
 
-            val post = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(juanPerez)))).first()
+            val post = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(user)))).first()
 
-            val likeResponse = backend(likerBodyLens.set(Request(POST, "/publications/${post.postId}/like"), LikerDto(juanPerez.userId)))
+            val likeResponse = backend(likerBodyLens.set(Request(POST, "/publications/${post.postId}/like"), LikerDto(user.userId)))
             assertThat(likeResponse.status).isEqualTo(OK)
+            assertThat(likeResponse.bodyString()).isEqualTo("{\"likes\":1}")
 
-            val updatedPost = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(juanPerez)))).first()
+            val updatedPost = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(user)))).first()
             assertThat(updatedPost.likes).isEqualTo(1)
         }
 
         @Test
         fun `user cannot add inappropriate post`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val user = registerUser()
             val inappropriatePost = PublicationTextDto("orange")
 
-            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), inappropriatePost))
+            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(user)), inappropriatePost))
             assertThat(publicationResponse.status).isEqualTo(BAD_REQUEST)
             assertThat(publicationResponse.bodyString()).isEqualTo(INAPPROPRIATE_WORD)
         }
@@ -276,10 +275,10 @@ internal class BackendTest {
 
             addFollowing(diego, juan)
             addFollowing(carla, juan)
-            val postsRange = 1..10
+            val postsRange = (1..10).map { it.toString() }
 
             postsRange.forEach {
-                addPublication(users.random(), PublicationTextDto(it.toString()))
+                addPublication(users.random(), PublicationTextDto(it))
                 TestUtilities.delayOneSecond()
             }
 
@@ -288,7 +287,7 @@ internal class BackendTest {
 
             val publications = publicationListResponseLens(wallResponse)
             assertThat(publications).hasSize(postsRange.count())
-            assertThat(publications.map { it.text }).isEqualTo(postsRange.reversed().map { it.toString() })
+            assertThat(publications.map { it.text }).isEqualTo(postsRange.reversed())
         }
     }
 }
