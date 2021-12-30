@@ -7,6 +7,7 @@ import com.almeydajuan.openchat.TestFactory.USER_NAME
 import com.almeydajuan.openchat.TestFactory.USER_PASSWORD
 import com.almeydajuan.openchat.TestFactory.createUserNamed
 import com.almeydajuan.openchat.TestUtilities
+import com.almeydajuan.openchat.TestUtilities.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -36,7 +37,7 @@ internal class OpenChatSystemTest {
         assertTrue(registeredUser.isNamed(USER_NAME))
         assertEquals(USER_ABOUT, registeredUser.about)
         assertEquals(USER_HOME_PAGE, registeredUser.homePage)
-        assertNotEquals(USER_HOME_PAGE + "x", registeredUser.homePage)
+        assertNotEquals(USER_HOME_PAGE + randomString(), registeredUser.homePage)
     }
 
     private fun registerUser(system: OpenChatSystem, username: String = USER_NAME): User =
@@ -95,14 +96,14 @@ internal class OpenChatSystemTest {
         val system = createSystem()
         registerUser(system)
 
-        assertCanNotAuthenticateUserWith(system, USER_PASSWORD + "something")
+        assertCanNotAuthenticateUserWith(system, USER_PASSWORD + randomString())
     }
 
     @Test
     fun `registered user can publish`() {
         val system = createSystem()
         registerUser(system)
-        val publication = system.publishForUserNamed(USER_NAME, "hello")
+        val publication = system.publishForUserNamed(USER_NAME, randomString())
         val timeLine = system.timeLineForUserNamed(USER_NAME)
 
         assertThat(timeLine).isEqualTo(listOf(publication))
@@ -113,7 +114,7 @@ internal class OpenChatSystemTest {
         val system = createSystem()
 
         TestUtilities.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
-            system.publishForUserNamed(USER_HOME_PAGE, "hello")
+            system.publishForUserNamed(USER_HOME_PAGE, randomString())
         }
     }
 
@@ -144,10 +145,10 @@ internal class OpenChatSystemTest {
         registerUser(system, ANOTHER_USER_NAME)
 
         system.followForUserNamed(USER_NAME, ANOTHER_USER_NAME)
-        val followedPublication = system.publishForUserNamed(USER_NAME, "hello")
+        val followedPublication = system.publishForUserNamed(USER_NAME, randomString())
 
         TestUtilities.delayOneSecond()
-        val followerPublication = system.publishForUserNamed(ANOTHER_USER_NAME, "bye")
+        val followerPublication = system.publishForUserNamed(ANOTHER_USER_NAME, randomString())
         val wall = system.wallForUserNamed(USER_NAME)
 
         assertThat(wall).isEqualTo(listOf(followerPublication, followedPublication))
@@ -158,7 +159,7 @@ internal class OpenChatSystemTest {
         val system = createSystem()
         registerUser(system)
 
-        val publication = system.publishForUserNamed(USER_NAME, "hello")
+        val publication = system.publishForUserNamed(USER_NAME, randomString())
 
         assertEquals(0, system.likesOf(publication))
     }
@@ -168,7 +169,7 @@ internal class OpenChatSystemTest {
         val system = createSystem()
         registerUser(system)
         registerUser(system, ANOTHER_USER_NAME)
-        val publication = system.publishForUserNamed(USER_NAME, "hello")
+        val publication = system.publishForUserNamed(USER_NAME, randomString())
 
         val likes = system.likePublication(publication, ANOTHER_USER_NAME)
 
@@ -180,7 +181,7 @@ internal class OpenChatSystemTest {
     fun `cannot like non published publication`() {
         val system = createSystem()
         val registeredUser = registerUser(system)
-        val publication = Publication.madeBy(Publisher.relatedTo(registeredUser), "hello", TestUtilities.now)
+        val publication = Publication.madeBy(Publisher.relatedTo(registeredUser), randomString(), TestUtilities.now)
 
         TestUtilities.assertThrowsModelExceptionWithErrorMessage(INVALID_PUBLICATION) {
             system.likePublication(publication, USER_NAME)
@@ -192,7 +193,7 @@ internal class OpenChatSystemTest {
         val system = createSystem()
         registerUser(system)
         registerUser(system, ANOTHER_USER_NAME)
-        val publication = system.publishForUserNamed(USER_NAME, "hello")
+        val publication = system.publishForUserNamed(USER_NAME, randomString())
 
         system.likePublication(publication, ANOTHER_USER_NAME)
         val likes = system.likePublication(publication, ANOTHER_USER_NAME)
@@ -205,7 +206,7 @@ internal class OpenChatSystemTest {
     fun `not registered user cannot like publication`() {
         val system = createSystem()
         registerUser(system)
-        val publication: Publication = system.publishForUserNamed(USER_NAME, "hello")
+        val publication: Publication = system.publishForUserNamed(USER_NAME, randomString())
 
         TestUtilities.assertThrowsModelExceptionWithErrorMessage(USER_NOT_REGISTERED) {
             system.likePublication(publication, ANOTHER_USER_NAME)

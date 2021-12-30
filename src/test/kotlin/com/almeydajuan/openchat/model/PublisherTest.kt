@@ -2,6 +2,7 @@ package com.almeydajuan.openchat.model
 
 import com.almeydajuan.openchat.TestFactory
 import com.almeydajuan.openchat.TestUtilities.assertThrowsModelExceptionWithErrorMessage
+import com.almeydajuan.openchat.TestUtilities.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -20,7 +21,7 @@ internal class PublisherTest {
     @Test
     fun publisherCanFollowOtherPublisher() {
         val followed = createSomeUser()
-        val follower = createSomeUser("otherUser")
+        val follower = createSomeUser(randomString())
 
         followed.followedBy(follower)
 
@@ -40,7 +41,7 @@ internal class PublisherTest {
     @Test
     fun publisherCanNotFollowSamePublisherTwice() {
         val followed = createSomeUser()
-        val follower = createSomeUser("otherUser")
+        val follower = createSomeUser(randomString())
 
         followed.followedBy(follower)
 
@@ -68,7 +69,7 @@ internal class PublisherTest {
         assertTrue(createdPublisher.hasPublications())
         assertTrue(publication.hasMessage(message))
         assertTrue(publication.wasPublishedAt(publicationTime))
-        assertFalse(publication.hasMessage(message + "something"))
+        assertFalse(publication.hasMessage(message + randomString()))
         assertFalse(publication.wasPublishedAt(publicationTime.plusSeconds(1)))
     }
 
@@ -76,7 +77,7 @@ internal class PublisherTest {
     fun timelineHasPublisherPublicationsSortedWithLatestPublicationsFirst() {
         val createdPublisher = createSomeUser()
         val publicationTime = LocalDateTime.now()
-        val message = "a message"
+        val message = randomString()
 
         val secondPublication = createdPublisher.publish(message, publicationTime.plusSeconds(1))
         val firstPublication = createdPublisher.publish(message, publicationTime)
@@ -89,7 +90,7 @@ internal class PublisherTest {
     fun wallContainsPublisherPublications() {
         val follower = createSomeUser()
         val publicationTime = LocalDateTime.now()
-        val message = "a message"
+        val message = randomString()
 
         val firstPublication = follower.publish(message, publicationTime)
         val wall = follower.wall()
@@ -100,11 +101,11 @@ internal class PublisherTest {
     @Test
     fun wallContainsFollowersPublications() {
         val followed = createSomeUser()
-        val follower = createSomeUser("otherUser")
+        val follower = createSomeUser(randomString())
         followed.followedBy(follower)
 
         val publicationTime = LocalDateTime.now()
-        val message = "a message"
+        val message = randomString()
         val firstPublication = follower.publish(message, publicationTime.plusSeconds(1))
 
         val wall = followed.wall()
@@ -114,11 +115,11 @@ internal class PublisherTest {
     @Test
     fun wallContainsFollowersPublicationsWithLatestPublicationsFirst() {
         val followed = createSomeUser()
-        val follower = createSomeUser("otherUser")
+        val follower = createSomeUser(randomString())
         followed.followedBy(follower)
 
         val publicationTime = LocalDateTime.now()
-        val message = "a message"
+        val message = randomString()
         val firstPublication = followed.publish(message, publicationTime)
         val secondPublication = follower.publish(message, publicationTime.plusSeconds(1))
         val thirdPublication = followed.publish(message, publicationTime.plusSeconds(2))
@@ -170,7 +171,7 @@ internal class PublisherTest {
         }
     }
 
-    private fun createSomeUser(user: String = "user"): Publisher {
+    private fun createSomeUser(user: String = randomString()): Publisher {
         return Publisher.relatedTo(TestFactory.createUserNamed(user))
     }
 }

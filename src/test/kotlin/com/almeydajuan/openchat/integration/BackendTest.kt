@@ -136,8 +136,8 @@ internal class BackendTest {
 
         @Test
         fun `find all users`() {
-            val diego = registerUser(createRegistrationDto("diego"))
-            val carlos = registerUser(createRegistrationDto("carlos"))
+            val diego = registerUser(createRegistrationDto(TestUtilities.randomString()))
+            val carlos = registerUser(createRegistrationDto(TestUtilities.randomString()))
 
             val usersResponse = backend(Request(GET, "/users"))
             assertThat(usersResponse.status).isEqualTo(OK)
@@ -165,9 +165,9 @@ internal class BackendTest {
 
         @Test
         fun `find all followees for user`() {
-            val carlos = registerUser(createRegistrationDto("carlos"))
-            val maria = registerUser(createRegistrationDto("maria"))
-            val diego = registerUser(createRegistrationDto("diego"))
+            val carlos = registerUser(createRegistrationDto(TestUtilities.randomString()))
+            val maria = registerUser(createRegistrationDto(TestUtilities.randomString()))
+            val diego = registerUser(createRegistrationDto(TestUtilities.randomString()))
 
             addFollowing(maria, carlos)
             addFollowing(diego, carlos)
@@ -199,7 +199,7 @@ internal class BackendTest {
         @Test
         fun `user can add a post`() {
             val user = registerUser()
-            val publicationDto = PublicationTextDto("some text")
+            val publicationDto = PublicationTextDto(TestUtilities.randomString())
             val publication = addPublication(user, publicationDto)
 
             val timelineResponse = backend(Request(GET, timelineUrlForUser(user)))
@@ -238,7 +238,7 @@ internal class BackendTest {
         @Test
         fun `user can like a post`() {
             val user = registerUser()
-            addPublication(user, PublicationTextDto("some text"))
+            addPublication(user, PublicationTextDto(TestUtilities.randomString()))
 
             val post = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(user)))).first()
 
@@ -266,9 +266,9 @@ internal class BackendTest {
 
         @Test
         fun `retrieve user's wall`() {
-            val nico = registerUser(createRegistrationDto("nico"))
-            val diego = registerUser(createRegistrationDto("diego"))
-            val carla = registerUser(createRegistrationDto("carla"))
+            val nico = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
+            val diego = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
+            val carla = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
 
             val users = listOf(nico, diego, carla)
 

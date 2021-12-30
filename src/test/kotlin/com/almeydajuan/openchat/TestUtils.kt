@@ -16,6 +16,10 @@ object TestUtilities {
         now = now.plusSeconds(1)
     }
 
+    fun randomString() = UUID.randomUUID().toString()
+
+    fun randomUserName() = listOf("diego", "carla", "juan", "pepe", "carlos").random()
+
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }
 
