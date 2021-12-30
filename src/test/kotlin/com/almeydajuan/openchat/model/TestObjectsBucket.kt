@@ -22,6 +22,18 @@ object TestObjectsBucket {
         now = newNow
     }
 
+    fun createUserJuanPerez() = User(
+            JUAN_PEREZ_NAME,
+            JUAN_PEREZ_ABOUT,
+            JUAN_PEREZ_HOME_PAGE
+    )
+
+    fun createPepeSanchez() = User(
+            PEPE_SANCHEZ_NAME,
+            PEPE_SANCHEZ_ABOUT,
+            PEPE_SANCHEZ_HOME_PAGE
+    )
+
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }
 

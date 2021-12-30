@@ -14,7 +14,7 @@ class Publisher(private val user: User) {
         followers.add(potentialFollower)
     }
 
-    private fun isFollowedBy(potentialFollower: Publisher) = followers.contains(potentialFollower)
+    fun isFollowedBy(potentialFollower: Publisher) = followers.contains(potentialFollower)
 
     fun publish(message: String, publicationTime: LocalDateTime): Publication {
         val newPublication = Publication(this, message, publicationTime)
@@ -47,6 +47,12 @@ class Publisher(private val user: User) {
     private fun addPublicationTo(publicationCollector: MutableList<Publication>) {
         publicationCollector.addAll(publications)
     }
+
+    fun hasFollowers() = followers.isNotEmpty()
+
+    fun numberOfFollowers() = followers.size
+
+    fun hasPublications() = publications.isNotEmpty()
 
     companion object {
         fun relatedTo(user: User) = Publisher(user)

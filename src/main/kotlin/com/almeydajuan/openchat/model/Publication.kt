@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.util.Collections
 
 class Publication(
-        val publisher: Publisher,
+        private val publisher: Publisher,
         val message: String,
         val publicationTime: LocalDateTime
 ) {
@@ -15,6 +15,9 @@ class Publication(
 
     fun publisherRelatedUser() = publisher.relatedUser()
 
+    fun hasMessage(message: String) = this.message == message
+
+    fun wasPublishedAt(publicationTime: LocalDateTime) = this.publicationTime == publicationTime
 
     companion object {
         fun madeBy(publisher: Publisher, message: String, publicationTime: LocalDateTime): Publication {
