@@ -51,7 +51,7 @@ internal class BackendTest {
 
         @Test
         fun `register twice the same user should fail`() {
-            val registrationDto = createRegistrationDto("user")
+            val registrationDto = createRegistrationDto()
             registerUser(registrationDto)
 
             val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
@@ -60,7 +60,7 @@ internal class BackendTest {
         }
     }
 
-    private fun registerUser(registrationDto: RegistrationDto = createRegistrationDto("user")): UserDto {
+    private fun registerUser(registrationDto: RegistrationDto = createRegistrationDto()): UserDto {
         val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
         assertThat(registrationResponse.status).isEqualTo(CREATED)
         return userResponseLens(registrationResponse)
@@ -87,7 +87,7 @@ internal class BackendTest {
 
         @Test
         fun `login user`() {
-            val registrationDto = createRegistrationDto("user")
+            val registrationDto = createRegistrationDto()
             registerUser(registrationDto)
 
             val loginResponse = backend(loginBodyLens.set(
@@ -109,7 +109,7 @@ internal class BackendTest {
 
         @Test
         fun `should fail when login with wrong password`() {
-            val registrationDto = createRegistrationDto("user")
+            val registrationDto = createRegistrationDto()
             registerUser(registrationDto)
 
             val loginResponse = backend(loginBodyLens.set(
@@ -136,7 +136,7 @@ internal class BackendTest {
 
         @Test
         fun `find all users`() {
-            val juan = registerUser(createRegistrationDto("juan"))
+            val diego = registerUser(createRegistrationDto("diego"))
             val carlos = registerUser(createRegistrationDto("carlos"))
 
             val usersResponse = backend(Request(GET, "/users"))
@@ -144,7 +144,7 @@ internal class BackendTest {
 
             val userList = userListResponseLens(usersResponse)
             assertThat(userList.size).isEqualTo(2)
-            assertThat(userList).isEqualTo(listOf(juan, carlos))
+            assertThat(userList).isEqualTo(listOf(diego, carlos))
         }
     }
 
@@ -153,9 +153,9 @@ internal class BackendTest {
 
         @Test
         fun `new user has no followees`() {
-            val juan = registerUser(createRegistrationDto("juan"))
+            val user = registerUser(createRegistrationDto())
 
-            val followeesResponse = backend(Request(GET, "/followings/${juan.userId}/followees"))
+            val followeesResponse = backend(Request(GET, "/followings/${user.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
             assertThat(followeesResponse.bodyString()).isEqualTo("[]")
 
@@ -165,14 +165,14 @@ internal class BackendTest {
 
         @Test
         fun `find all followees for user`() {
-            val juan = registerUser(createRegistrationDto("juan"))
+            val carlos = registerUser(createRegistrationDto("carlos"))
             val maria = registerUser(createRegistrationDto("maria"))
             val diego = registerUser(createRegistrationDto("diego"))
 
-            addFollowing(maria, juan)
-            addFollowing(diego, juan)
+            addFollowing(maria, carlos)
+            addFollowing(diego, carlos)
 
-            val followeesResponse = backend(Request(GET, "/followings/${juan.userId}/followees"))
+            val followeesResponse = backend(Request(GET, "/followings/${carlos.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
 
             val followees = userListResponseLens(followeesResponse)
@@ -266,14 +266,14 @@ internal class BackendTest {
 
         @Test
         fun `retrieve user's wall`() {
-            val juan = registerUser(createRegistrationDto("juan"))
+            val nico = registerUser(createRegistrationDto("nico"))
             val diego = registerUser(createRegistrationDto("diego"))
             val carla = registerUser(createRegistrationDto("carla"))
 
-            val users = listOf(juan, diego, carla)
+            val users = listOf(nico, diego, carla)
 
-            addFollowing(diego, juan)
-            addFollowing(carla, juan)
+            addFollowing(diego, nico)
+            addFollowing(carla, nico)
             val postsRange = (1..10).map { it.toString() }
 
             postsRange.forEach {
@@ -281,7 +281,7 @@ internal class BackendTest {
                 TestUtilities.delayOneSecond()
             }
 
-            val wallResponse = backend(Request(GET, "/users/${juan.userId}/wall"))
+            val wallResponse = backend(Request(GET, "/users/${nico.userId}/wall"))
             assertThat(wallResponse.status).isEqualTo(OK)
 
             val publications = publicationListResponseLens(wallResponse)

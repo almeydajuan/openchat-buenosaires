@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.function.Executable
 import java.time.LocalDateTime
+import java.util.UUID
 
 object TestUtilities {
     var now: LocalDateTime = LocalDateTime.now()
@@ -31,5 +32,6 @@ object TestFactory {
 
     fun createUserNamed(name: String) = User.named(name, USER_ABOUT, USER_HOME_PAGE)
 
-    fun createRegistrationDto(name: String) = RegistrationDto(name, USER_PASSWORD, USER_ABOUT, USER_HOME_PAGE)
+    fun createRegistrationDto(name: String = UUID.randomUUID().toString()) =
+            RegistrationDto(name, USER_PASSWORD, USER_ABOUT, USER_HOME_PAGE)
 }
