@@ -64,7 +64,7 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     "/login" bind POST to {
         val loginDto = loginBodyLens(it)
         runCatching {
-            Response(OK).with(userResponseLens of restReceptionist.login(loginDto))
+            userResponseLens.inject(restReceptionist.login(loginDto), Response(OK))
         }.onFailure { Response(NOT_FOUND).body(INVALID_CREDENTIALS) }.getOrThrow()
     },
     "/users" bind GET to {
@@ -74,7 +74,7 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
         val registrationDto = registrationBodyLens(it)
         val user = restReceptionist.registerUser(registrationDto)
 
-        Response(CREATED).with(userResponseLens of user)
+        userResponseLens.inject(user, Response(CREATED))
     },
     "/users/{userId}/timeline" bind GET to {
         val userId = userIdPathLens(it)

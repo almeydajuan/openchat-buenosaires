@@ -1,8 +1,8 @@
 package com.almeydajuan.openchat.model
 
-import com.almeydajuan.openchat.model.TestObjectsBucket.PEPE_SANCHEZ_NAME
-import com.almeydajuan.openchat.model.TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage
-import com.almeydajuan.openchat.model.TestObjectsBucket.createPepeSanchez
+import com.almeydajuan.openchat.TestObjectsBucket.PEPE_SANCHEZ_NAME
+import com.almeydajuan.openchat.TestObjectsBucket.assertThrowsModelExceptionWithErrorMessage
+import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchez
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

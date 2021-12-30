@@ -1,5 +1,8 @@
-package com.almeydajuan.openchat.model
+package com.almeydajuan.openchat
 
+import com.almeydajuan.openchat.model.ModelException
+import com.almeydajuan.openchat.model.RegistrationDto
+import com.almeydajuan.openchat.model.User
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.function.Executable
@@ -25,6 +28,8 @@ object TestObjectsBucket {
     fun createUserJuanPerez() = User.named(JUAN_PEREZ_NAME, JUAN_PEREZ_ABOUT, JUAN_PEREZ_HOME_PAGE)
 
     fun createPepeSanchez() = User.named(PEPE_SANCHEZ_NAME, PEPE_SANCHEZ_ABOUT, PEPE_SANCHEZ_HOME_PAGE)
+
+    fun createJuanPerezRegistrationDto() = RegistrationDto(JUAN_PEREZ_NAME, JUAN_PEREZ_PASSWORD, JUAN_PEREZ_ABOUT, JUAN_PEREZ_HOME_PAGE)
 
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }

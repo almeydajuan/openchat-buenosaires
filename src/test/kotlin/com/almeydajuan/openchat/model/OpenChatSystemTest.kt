@@ -1,14 +1,15 @@
 package com.almeydajuan.openchat.model
 
-import com.almeydajuan.openchat.model.TestObjectsBucket.JUAN_PEREZ_NAME
-import com.almeydajuan.openchat.model.TestObjectsBucket.JUAN_PEREZ_PASSWORD
-import com.almeydajuan.openchat.model.TestObjectsBucket.PEPE_SANCHEZ_ABOUT
-import com.almeydajuan.openchat.model.TestObjectsBucket.PEPE_SANCHEZ_HOME_PAGE
-import com.almeydajuan.openchat.model.TestObjectsBucket.PEPE_SANCHEZ_NAME
-import com.almeydajuan.openchat.model.TestObjectsBucket.PEPE_SANCHEZ_PASSWORD
-import com.almeydajuan.openchat.model.TestObjectsBucket.createPepeSanchez
-import com.almeydajuan.openchat.model.TestObjectsBucket.createUserJuanPerez
-import com.almeydajuan.openchat.model.TestObjectsBucket.now
+import com.almeydajuan.openchat.TestObjectsBucket
+import com.almeydajuan.openchat.TestObjectsBucket.JUAN_PEREZ_NAME
+import com.almeydajuan.openchat.TestObjectsBucket.JUAN_PEREZ_PASSWORD
+import com.almeydajuan.openchat.TestObjectsBucket.PEPE_SANCHEZ_ABOUT
+import com.almeydajuan.openchat.TestObjectsBucket.PEPE_SANCHEZ_HOME_PAGE
+import com.almeydajuan.openchat.TestObjectsBucket.PEPE_SANCHEZ_NAME
+import com.almeydajuan.openchat.TestObjectsBucket.PEPE_SANCHEZ_PASSWORD
+import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchez
+import com.almeydajuan.openchat.TestObjectsBucket.createUserJuanPerez
+import com.almeydajuan.openchat.TestObjectsBucket.now
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
