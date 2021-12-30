@@ -18,6 +18,7 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class BackendTest {
@@ -32,29 +33,16 @@ internal class BackendTest {
         assertThat(response.bodyString()).isEqualTo("OpenChat: OK!")
     }
 
-    @Test
-    fun `find all users`() {
-        val registrationDto = registerJuanPerez()
+    @Nested
+    inner class RegistrationValidation {
+        @Test
+        fun `register twice the same user should fail`() {
+            val registrationDto = registerJuanPerez()
 
-        val usersResponse = backend(Request(GET, "/users"))
-        assertThat(usersResponse.status).isEqualTo(OK)
-
-        val userList = userListResponseLens.get(usersResponse)
-        assertThat(userList.size).isEqualTo(1)
-
-        val registeredUser = userList.first()
-        assertThat(registeredUser.username).isEqualTo(registrationDto.username)
-        assertThat(registeredUser.about).isEqualTo(registrationDto.about)
-        assertThat(registeredUser.homePage).isEqualTo(registrationDto.homePage)
-    }
-
-    @Test
-    fun `register twice the same user should fail`() {
-        val registrationDto = registerJuanPerez()
-
-        val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
-        assertThat(registrationResponse.status).isEqualTo(BAD_REQUEST)
-        assertThat(registrationResponse.bodyString()).isEqualTo(CANNOT_REGISTER_SAME_USER_TWICE)
+            val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
+            assertThat(registrationResponse.status).isEqualTo(BAD_REQUEST)
+            assertThat(registrationResponse.bodyString()).isEqualTo(CANNOT_REGISTER_SAME_USER_TWICE)
+        }
     }
 
     private fun registerJuanPerez(): RegistrationDto {
@@ -64,36 +52,58 @@ internal class BackendTest {
         return registrationDto
     }
 
-    @Test
-    fun `login user`() {
-        val registrationDto = registerJuanPerez()
+    @Nested
+    inner class LoginValidation {
+        @Test
+        fun `login user`() {
+            val registrationDto = registerJuanPerez()
 
-        val loginResponse = backend(loginBodyLens.set(
-                target = Request(POST, "/login"),
-                value = LoginDto(registrationDto.username, registrationDto.password))
-        )
-        assertThat(loginResponse.status).isEqualTo(OK)
+            val loginResponse = backend(loginBodyLens.set(
+                    target = Request(POST, "/login"),
+                    value = LoginDto(registrationDto.username, registrationDto.password))
+            )
+            assertThat(loginResponse.status).isEqualTo(OK)
+        }
+
+        @Test
+        fun `should fail when login with non existent user`() {
+            val loginResponse = backend(loginBodyLens.set(
+                    Request(POST, "/login"),
+                    LoginDto("user", "password"))
+            )
+            assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
+            assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
+        }
+
+        @Test
+        fun `should fail when login with wrong password`() {
+            val registrationDto = registerJuanPerez()
+
+            val loginResponse = backend(loginBodyLens.set(
+                    target = Request(POST, "/login"),
+                    value = LoginDto(registrationDto.username, registrationDto.password + "sadsa"))
+            )
+            assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
+            assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
+        }
     }
 
-    @Test
-    fun `should fail when login with non existent user`() {
-        val loginResponse = backend(loginBodyLens.set(
-                Request(POST, "/login"),
-                LoginDto("user", "password"))
-        )
-        assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
-        assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
-    }
+    @Nested
+    inner class UsersValidation {
+        @Test
+        fun `find all users`() {
+            val registrationDto = registerJuanPerez()
 
-    @Test
-    fun `should fail when login with wrong password`() {
-        val registrationDto = registerJuanPerez()
+            val usersResponse = backend(Request(GET, "/users"))
+            assertThat(usersResponse.status).isEqualTo(OK)
 
-        val loginResponse = backend(loginBodyLens.set(
-                target = Request(POST, "/login"),
-                value = LoginDto(registrationDto.username, registrationDto.password + "sadsa"))
-        )
-        assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
-        assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
+            val userList = userListResponseLens.get(usersResponse)
+            assertThat(userList.size).isEqualTo(1)
+
+            val registeredUser = userList.first()
+            assertThat(registeredUser.username).isEqualTo(registrationDto.username)
+            assertThat(registeredUser.about).isEqualTo(registrationDto.about)
+            assertThat(registeredUser.homePage).isEqualTo(registrationDto.homePage)
+        }
     }
 }
