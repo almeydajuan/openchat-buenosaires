@@ -1,6 +1,5 @@
 package com.almeydajuan.openchat.integration
 
-import com.almeydajuan.openchat.TestFactory.createJuanPerezRegistrationDto
 import com.almeydajuan.openchat.TestFactory.createRegistrationDto
 import com.almeydajuan.openchat.TestUtilities
 import com.almeydajuan.openchat.followingBodyLens
@@ -52,7 +51,7 @@ internal class BackendTest {
 
         @Test
         fun `register twice the same user should fail`() {
-            val registrationDto = createJuanPerezRegistrationDto()
+            val registrationDto = createRegistrationDto("user")
             registerUser(registrationDto)
 
             val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
@@ -88,7 +87,7 @@ internal class BackendTest {
 
         @Test
         fun `login user`() {
-            val registrationDto = createJuanPerezRegistrationDto()
+            val registrationDto = createRegistrationDto("user")
             registerUser(registrationDto)
 
             val loginResponse = backend(loginBodyLens.set(
@@ -110,7 +109,7 @@ internal class BackendTest {
 
         @Test
         fun `should fail when login with wrong password`() {
-            val registrationDto = createJuanPerezRegistrationDto()
+            val registrationDto = createRegistrationDto("user")
             registerUser(registrationDto)
 
             val loginResponse = backend(loginBodyLens.set(
@@ -154,9 +153,9 @@ internal class BackendTest {
 
         @Test
         fun `new user has no followees`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val juan = registerUser(createRegistrationDto("juan"))
 
-            val followeesResponse = backend(Request(GET, "/followings/${juanPerez.userId}/followees"))
+            val followeesResponse = backend(Request(GET, "/followings/${juan.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
             assertThat(followeesResponse.bodyString()).isEqualTo("[]")
 
@@ -166,14 +165,14 @@ internal class BackendTest {
 
         @Test
         fun `find all followees for user`() {
-            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            val juan = registerUser(createRegistrationDto("juan"))
             val maria = registerUser(createRegistrationDto("maria"))
             val diego = registerUser(createRegistrationDto("diego"))
 
-            addFollowing(maria, juanPerez)
-            addFollowing(diego, juanPerez)
+            addFollowing(maria, juan)
+            addFollowing(diego, juan)
 
-            val followeesResponse = backend(Request(GET, "/followings/${juanPerez.userId}/followees"))
+            val followeesResponse = backend(Request(GET, "/followings/${juan.userId}/followees"))
             assertThat(followeesResponse.status).isEqualTo(OK)
 
             val followees = userListResponseLens(followeesResponse)

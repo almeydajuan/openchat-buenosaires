@@ -37,9 +37,5 @@ object TestFactory {
 
     fun createPepeSanchez() = User.named(PEPE_NAME, PEPE_ABOUT, PEPE_HOME_PAGE)
 
-    fun createJuanPerezRegistrationDto() = RegistrationDto(JUAN_NAME, JUAN_PASSWORD, JUAN_ABOUT, JUAN_HOME_PAGE)
-
-    fun createPepeSanchezRegistrationDto() = RegistrationDto(PEPE_NAME, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
-
     fun createRegistrationDto(name: String) = RegistrationDto(name, PEPE_PASSWORD, PEPE_ABOUT, PEPE_HOME_PAGE)
 }
