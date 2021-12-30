@@ -9,13 +9,7 @@ data class User(
         assertNameIsNotBlank(name)
     }
 
-    private fun assertNameIsNotBlank(name: String) {
-        if (name.isBlank()) throw ModelException(NAME_CANNOT_BE_BLANK);
-    }
-
-    fun isNamed(potentialName: String): Boolean {
-        return name == potentialName;
-    }
+    fun isNamed(potentialName: String) = name == potentialName
 
     fun toUserDto(registeredUserId: String) = UserDto(
         userId = registeredUserId,
@@ -23,6 +17,17 @@ data class User(
         about = about,
         homePage = homePage
     )
+
+    companion object {
+        fun named(name: String, about: String, homePage: String): User {
+            assertNameIsNotBlank(name)
+            return User(name, about, homePage)
+        }
+
+        private fun assertNameIsNotBlank(name: String) {
+            if (name.isBlank()) throw ModelException(NAME_CANNOT_BE_BLANK)
+        }
+    }
 }
 
-const val NAME_CANNOT_BE_BLANK = "Name can not be blank";
+const val NAME_CANNOT_BE_BLANK = "Name can not be blank"

@@ -13,8 +13,8 @@ object TestObjectsBucket {
 
     const val JUAN_PEREZ_NAME = "Juan Perez"
     const val JUAN_PEREZ_PASSWORD = "otherPassword"
-    const val JUAN_PEREZ_ABOUT = "about"
-    const val JUAN_PEREZ_HOME_PAGE = "www.twitter.com/juanPerez"
+    private const val JUAN_PEREZ_ABOUT = "about"
+    private const val JUAN_PEREZ_HOME_PAGE = "www.twitter.com/juanPerez"
 
     var now: LocalDateTime = LocalDateTime.now()
 
@@ -22,17 +22,9 @@ object TestObjectsBucket {
         now = newNow
     }
 
-    fun createUserJuanPerez() = User(
-            JUAN_PEREZ_NAME,
-            JUAN_PEREZ_ABOUT,
-            JUAN_PEREZ_HOME_PAGE
-    )
+    fun createUserJuanPerez() = User.named(JUAN_PEREZ_NAME, JUAN_PEREZ_ABOUT, JUAN_PEREZ_HOME_PAGE)
 
-    fun createPepeSanchez() = User(
-            PEPE_SANCHEZ_NAME,
-            PEPE_SANCHEZ_ABOUT,
-            PEPE_SANCHEZ_HOME_PAGE
-    )
+    fun createPepeSanchez() = User.named(PEPE_SANCHEZ_NAME, PEPE_SANCHEZ_ABOUT, PEPE_SANCHEZ_HOME_PAGE)
 
     fun assertThrowsModelExceptionWithErrorMessage(errorMessage: String, closureToFail: Executable) {
         val error = assertThrows<ModelException> { closureToFail.execute() }
