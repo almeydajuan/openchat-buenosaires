@@ -2,6 +2,8 @@ package com.almeydajuan.openchat.integration
 
 import com.almeydajuan.openchat.TestObjectsBucket.createJuanPerezRegistrationDto
 import com.almeydajuan.openchat.loginBodyLens
+import com.almeydajuan.openchat.model.CANNOT_REGISTER_SAME_USER_TWICE
+import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
 import com.almeydajuan.openchat.model.RegistrationDto
@@ -46,6 +48,15 @@ internal class BackendTest {
         assertThat(registeredUser.homePage).isEqualTo(registrationDto.homePage)
     }
 
+    @Test
+    fun `register twice the same user should fail`() {
+        val registrationDto = registerJuanPerez()
+
+        val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
+        assertThat(registrationResponse.status).isEqualTo(BAD_REQUEST)
+        assertThat(registrationResponse.bodyString()).isEqualTo(CANNOT_REGISTER_SAME_USER_TWICE)
+    }
+
     private fun registerJuanPerez(): RegistrationDto {
         val registrationDto = createJuanPerezRegistrationDto()
         val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
@@ -71,6 +82,7 @@ internal class BackendTest {
                 LoginDto("user", "password"))
         )
         assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
+        assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
     }
 
     @Test
@@ -82,5 +94,6 @@ internal class BackendTest {
                 value = LoginDto(registrationDto.username, registrationDto.password + "sadsa"))
         )
         assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
+        assertThat(loginResponse.bodyString()).isEqualTo(INVALID_CREDENTIALS)
     }
 }
