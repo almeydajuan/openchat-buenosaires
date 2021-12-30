@@ -91,6 +91,15 @@ internal class BackendTest {
     @Nested
     inner class UsersValidation {
         @Test
+        fun `find no one`() {
+            val usersResponse = backend(Request(GET, "/users"))
+            assertThat(usersResponse.status).isEqualTo(OK)
+
+            val userList = userListResponseLens.get(usersResponse)
+            assertThat(userList).isEmpty()
+        }
+
+        @Test
         fun `find all users`() {
             val juanPerez = registerUser(createJuanPerezRegistrationDto())
             val pepeSanchez = registerUser(createPepeSanchezRegistrationDto())
