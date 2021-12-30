@@ -1,6 +1,8 @@
 package com.almeydajuan.openchat.integration
 
 import com.almeydajuan.openchat.TestObjectsBucket.createJuanPerezRegistrationDto
+import com.almeydajuan.openchat.loginBodyLens
+import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
 import com.almeydajuan.openchat.model.RegistrationDto
 import com.almeydajuan.openchat.model.RestReceptionist
@@ -11,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
+import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.junit.jupiter.api.Test
@@ -19,14 +22,16 @@ internal class BackendTest {
 
     private val backend = newBackend(RestReceptionist(OpenChatSystem()))
 
-    @Test fun `backend is up`() {
+    @Test
+    fun `backend is up`() {
         val response = backend(Request(GET, "/status"))
 
         assertThat(response.status).isEqualTo(OK)
         assertThat(response.bodyString()).isEqualTo("OpenChat: OK!")
     }
 
-    @Test fun `find all users`() {
+    @Test
+    fun `find all users`() {
         val registrationDto = registerJuanPerez()
 
         val usersResponse = backend(Request(GET, "/users"))
@@ -46,5 +51,36 @@ internal class BackendTest {
         val registrationResponse = backend(registrationBodyLens.set(Request(POST, "/users"), registrationDto))
         assertThat(registrationResponse.status).isEqualTo(CREATED)
         return registrationDto
+    }
+
+    @Test
+    fun `login user`() {
+        val registrationDto = registerJuanPerez()
+
+        val loginResponse = backend(loginBodyLens.set(
+                target = Request(POST, "/login"),
+                value = LoginDto(registrationDto.username, registrationDto.password))
+        )
+        assertThat(loginResponse.status).isEqualTo(OK)
+    }
+
+    @Test
+    fun `should fail when login with non existent user`() {
+        val loginResponse = backend(loginBodyLens.set(
+                Request(POST, "/login"),
+                LoginDto("user", "password"))
+        )
+        assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
+    }
+
+    @Test
+    fun `should fail when login with wrong password`() {
+        val registrationDto = registerJuanPerez()
+
+        val loginResponse = backend(loginBodyLens.set(
+                target = Request(POST, "/login"),
+                value = LoginDto(registrationDto.username, registrationDto.password + "sadsa"))
+        )
+        assertThat(loginResponse.status).isEqualTo(BAD_REQUEST)
     }
 }

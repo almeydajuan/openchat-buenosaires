@@ -22,7 +22,7 @@ class RestReceptionist(private val system: OpenChatSystem) {
 
     fun login(loginDto: LoginDto): UserDto =
         system.authenticateUser(loginDto.username, loginDto.password)?.let { it.toUserDto(userIdFor(it)) }
-            ?: throw RuntimeException(INVALID_CREDENTIALS)
+            ?: throw ModelException(INVALID_CREDENTIALS)
 
     fun users(): List<UserDto> = system.users().map { it.toUserDto(userIdFor(it)) }
 

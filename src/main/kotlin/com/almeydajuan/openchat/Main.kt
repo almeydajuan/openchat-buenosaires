@@ -2,7 +2,6 @@ package com.almeydajuan.openchat
 
 import com.almeydajuan.openchat.model.FOLLOWING_CREATED
 import com.almeydajuan.openchat.model.FollowingDto
-import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
 import com.almeydajuan.openchat.model.LikerDto
 import com.almeydajuan.openchat.model.LikesDto
 import com.almeydajuan.openchat.model.LoginDto
@@ -21,7 +20,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
-import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.core.with
@@ -63,9 +61,7 @@ fun newBackend(restReceptionist: RestReceptionist) = routes(
     },
     "/login" bind POST to {
         val loginDto = loginBodyLens(it)
-        runCatching {
-            userResponseLens.inject(restReceptionist.login(loginDto), Response(OK))
-        }.onFailure { Response(NOT_FOUND).body(INVALID_CREDENTIALS) }.getOrThrow()
+        userResponseLens.inject(restReceptionist.login(loginDto), Response(OK))
     },
     "/users" bind GET to {
         userListResponseLens(restReceptionist.users(), Response(OK))
