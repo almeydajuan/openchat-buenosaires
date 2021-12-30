@@ -20,6 +20,7 @@ dependencies {
     implementation("org.http4k:http4k-format-jackson")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.assertj:assertj-core:3.21.0")
 }
 
 tasks {

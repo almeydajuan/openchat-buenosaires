@@ -42,10 +42,14 @@ class Publisher(private val user: User) {
         if (this == potentialFollower) throw ModelException(CANNOT_FOLLOW_SELF)
     }
 
-    private fun sortedPublications(publications: List<Publication>) = publications.sortedBy { it.publicationTime }
+    private fun sortedPublications(publications: List<Publication>) = publications.sortedByDescending { it.publicationTime }
 
     private fun addPublicationTo(publicationCollector: MutableList<Publication>) {
         publicationCollector.addAll(publications)
+    }
+
+    companion object {
+        fun relatedTo(user: User) = Publisher(user)
     }
 }
 

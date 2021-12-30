@@ -1,7 +1,6 @@
 package com.almeydajuan.openchat.model
 
 import java.time.LocalDateTime
-import java.util.Optional
 
 class OpenChatSystem {
     private val userCards: MutableMap<String, UserCard> = mutableMapOf()
@@ -53,6 +52,15 @@ class OpenChatSystem {
             null
         }
     }
+
+    fun <T> withAuthenticatedUserDo(
+            userName: String,
+            password: String,
+            authenticatedClosure: (User) -> T,
+            failedClosure: () -> T
+    ): T = authenticateUser(userName, password)
+                ?.let(authenticatedClosure)
+                ?: failedClosure.invoke()
 
     private fun userCardForUserName(userName: String): UserCard? = userCards[userName]
 
