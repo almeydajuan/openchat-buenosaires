@@ -6,10 +6,12 @@ import com.almeydajuan.openchat.TestObjectsBucket.createPepeSanchezRegistrationD
 import com.almeydajuan.openchat.TestObjectsBucket.createRegistrationDto
 import com.almeydajuan.openchat.TestObjectsBucket.now
 import com.almeydajuan.openchat.followingBodyLens
+import com.almeydajuan.openchat.likerBodyLens
 import com.almeydajuan.openchat.loginBodyLens
 import com.almeydajuan.openchat.model.CANNOT_REGISTER_SAME_USER_TWICE
 import com.almeydajuan.openchat.model.FollowingDto
 import com.almeydajuan.openchat.model.INVALID_CREDENTIALS
+import com.almeydajuan.openchat.model.LikerDto
 import com.almeydajuan.openchat.model.LoginDto
 import com.almeydajuan.openchat.model.OpenChatSystem
 import com.almeydajuan.openchat.model.PublicationTextDto
@@ -203,6 +205,11 @@ internal class BackendTest {
             assertThat(post.likes).isEqualTo(0)
         }
 
+        private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto) {
+            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
+            assertThat(publicationResponse.status).isEqualTo(CREATED)
+        }
+
         @Test
         fun `timeline for user`() {
             val juanPerez = registerUser(createJuanPerezRegistrationDto())
@@ -222,9 +229,18 @@ internal class BackendTest {
             assertThat(timeline.last().text).isEqualTo(firstPublication.text)
         }
 
-        private fun addPublication(juanPerez: UserDto, publication: PublicationTextDto) {
-            val publicationResponse = backend(publicationBodyLens.set(Request(POST, timelineUrlForUser(juanPerez)), publication))
-            assertThat(publicationResponse.status).isEqualTo(CREATED)
+        @Test
+        fun `user can like a post`() {
+            val juanPerez = registerUser(createJuanPerezRegistrationDto())
+            addPublication(juanPerez, PublicationTextDto("some text"))
+
+            val post = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(juanPerez)))).first()
+
+            val likeResponse = backend(likerBodyLens.set(Request(POST, "/publications/${post.postId}/like"), LikerDto(juanPerez.userId)))
+            assertThat(likeResponse.status).isEqualTo(OK)
+
+            val updatedPost = publicationListResponseLens(backend(Request(GET, timelineUrlForUser(juanPerez)))).first()
+            assertThat(updatedPost.likes).isEqualTo(1)
         }
 
         private fun timelineUrlForUser(juanPerez: UserDto) = "/users/${juanPerez.userId}/timeline"
