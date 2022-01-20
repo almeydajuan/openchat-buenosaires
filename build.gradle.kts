@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
+    id("org.jetbrains.kotlinx.kover") version "0.4.2"
 }
 
 group = "com.almeydajuan"
@@ -34,6 +35,15 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
+    }
+
+    withType<kotlinx.kover.tasks.KoverVerificationTask> {
+        rule {
+            name = "Minimal line coverage rate in percents"
+            bound {
+                minValue = 95
+            }
+        }
     }
 }
 

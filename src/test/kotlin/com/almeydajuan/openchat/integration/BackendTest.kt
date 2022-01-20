@@ -266,9 +266,9 @@ internal class BackendTest {
 
         @Test
         fun `retrieve user's wall`() {
-            val nico = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
-            val diego = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
-            val carla = registerUser(createRegistrationDto(TestUtilities.randomUserName()))
+            val nico = registerUser(createRegistrationDto(TestUtilities.randomString()))
+            val diego = registerUser(createRegistrationDto(TestUtilities.randomString()))
+            val carla = registerUser(createRegistrationDto(TestUtilities.randomString()))
 
             val users = listOf(nico, diego, carla)
 
